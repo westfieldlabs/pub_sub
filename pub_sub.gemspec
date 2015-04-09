@@ -1,0 +1,28 @@
+# coding: utf-8
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'pub_sub/version'
+
+Gem::Specification.new do |spec|
+  spec.name          = 'pub_sub'
+  spec.version       = PubSub::VERSION
+  spec.authors       = ['Chris Nelson']
+  spec.email         = ['cnelson@au.westfield.com']
+
+  if spec.respond_to?(:metadata)
+    spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com' to prevent pushes to rubygems.org, or delete to allow pushes to any server."
+  end
+
+  spec.summary       = 'Encapsulates common Pub/Sub logic for communication between services.'
+  spec.homepage      = 'https://www.github.com/westfield/pub_sub'
+
+  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  spec.bindir        = 'exe'
+  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
+  spec.require_paths = ['lib']
+
+  spec.add_dependency 'aws-sdk-v1'
+  spec.add_dependency 'hashie'
+  spec.add_development_dependency 'bundler', '~> 1.8'
+  spec.add_development_dependency 'rake', '~> 10.0'
+end
