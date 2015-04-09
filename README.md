@@ -72,14 +72,12 @@ The `type` and `origin` metadata will be added automatically.
 ```ruby
 # app/events/event_update.rb
 class EventUpdate < PubSub::EventPublisher
-  class << self
-    def publish!(event)
-      super(url: event_url(event), id: event.id)
-    end
+  def publish!(event)
+    super(url: event_url(event), id: event.id)
+  end
 
-    def event_url(event)
-      "https://example.com/event/#{event.id}"
-    end
+  def event_url(event)
+    "https://example.com/event/#{event.id}"
   end
 end
 ```
