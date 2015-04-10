@@ -9,9 +9,9 @@ module PubSub
 
       # Amazon AWS configuration for SNS and SQS.
       ::AWS.config(
-        access_key_id: PubSub.config.aws.access_key_id,
-        secret_access_key: PubSub.config.aws.secret_access_key,
-        region: PubSub.config.aws.region
+        access_key_id:     PubSub.config.aws['access_key_id'],
+        secret_access_key: PubSub.config.aws['secret_access_key'],
+        region:            PubSub.config.aws['region']
       )
     end
   end

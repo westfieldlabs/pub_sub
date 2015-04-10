@@ -1,37 +1,44 @@
 module PubSub
   class Message
-    attr_accessor :message
-
-    def initialize(message)
-      @message = JSON.parse(message)
+    def initialize(payload)
+      @payload = JSON.parse(payload)
     end
 
     def process
-      handler.process if processable?
+      validate_message!
+      handler.process
     end
 
-    def processable?
-      if handler.nil?
-        PubSub.logger.warning("No event handler found for #{type}.")
-        nil
-      elsif !handler.respond_to?(:process)
-        PubSub.logger.error("Event handler #{type} missing process method.")
-        nil
-      else
-        true
+    def validate_message!
+      messages = PubSub.config.subscriptions[sender]
+      if messages.nil?
+        error = "We received a message from #{sender} but we do " \
+                'not subscribe to that service.'
+        PubSub.logger.error(error)
+        fail PubSub::ServiceUnknown, error
+      end
+
+      unless messages.include?(type)
+        error = "We received a message from #{sender} but it was " \
+                "of unknown type #{type}."
+        PubSub.logger.error(error)
+        fail PubSub::MessageTypeUnknown, error
       end
     end
 
     private
 
+    # Service where this message originated
+    def sender
+      @payload['sender']
+    end
+
     def type
-      @message['type']
+      @payload['type']
     end
 
     def handler
-      type.camelize.constantize.new(@message)
-    rescue NameError
-      nil # No handler found
+      type.camelize.constantize.new(@payload['data'])
     end
   end
 end

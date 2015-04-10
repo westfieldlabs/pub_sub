@@ -2,11 +2,15 @@ module PubSub
   class Publisher
     include Singleton
 
-    attr_accessor :sns, :topic
+    def self.publish!(message)
+      topic.publish(message)
+    end
 
     def self.topic
       instance.topic
     end
+
+    private
 
     def sns
       @sns ||= AWS::SNS.new
@@ -16,10 +20,8 @@ module PubSub
       @topic ||= sns.topics.create(topic_name)
     end
 
-    private
-
     def topic_name
-      "#{PubSub.config.service_name}-#{PubSub.env_suffix}"
+      PubSub.service_identifier
     end
   end
 end
