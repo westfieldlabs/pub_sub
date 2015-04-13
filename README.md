@@ -15,7 +15,7 @@ gem 'pub_sub', git: "https://#{github_auth}@github.com/westfield/pub_sub.git"
 And then execute:
 
     $ bundle
-    
+
 
 ## Usage
 
@@ -46,7 +46,7 @@ end
 
 When PubSub receives a message, it performs a couple of checks before processing:
 
-* If the message originates from a service we haven't subscribed to, a `PubSub::ServiceUnknown` exception will be logged & raised. 
+* If the message originates from a service we haven't subscribed to, a `PubSub::ServiceUnknown` exception will be logged & raised.
 * If the message originates from a known service, but the message type is not in the list of accepted types for that service, a `PubSub::MessageTypeUnknown` exception will be logged & raised.
 
 If the message passes those validations, it will `classify` the message type and run its `process` method. Data from the message is available inside the message handler via the `data` variable.
@@ -67,7 +67,7 @@ end
 
 ### Publishing a message
 
-A message publisher requires two things - an include of `PubSub::MessagePublisher` and a `message_data` method.  
+A message publisher requires two things - an include of `PubSub::MessagePublisher` and a `message_data` method.
 
 Note: If `message_data` is not defined in your publisher, a `NotImplementedError` will be raised.
 
@@ -90,14 +90,14 @@ class EventUpdate
 end
 ```
 
-### Using the message publisher
-``` 
-event = Event.first 
+### Async
+`MessagePublisher.publish` has an optional parameter `async` which will send the message in a separate thread. This avoids blocking when communicating with the Amazon SNS service which generally adds a delay of around 0.5-2 seconds. This can cause slow response times for `POST` and `PUT` requests.
 
-# async is an optional argument which avoids blocking 
-# while the message is sent to the Amazon SNS service. 
-# This delay is usually between 0.5 - 2 seconds.
-EventUpdate.new(event).publish(async: false)
+The trade-off is that if a message fails to send for some reason, it won't fail the parent transaction and you won't be notified. For this reason `async` is off by default, but you can use it where it makes sense to.
+
+```ruby
+# Example of using a message publisher with async
+EventUpdate.new(Event.first).publish(async: true)
 ```
 
 ### ActiveRecord integration
