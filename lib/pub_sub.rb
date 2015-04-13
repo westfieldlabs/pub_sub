@@ -1,4 +1,4 @@
-require 'aws-sdk-v1'
+require 'aws-sdk'
 require 'pub_sub/version'
 require 'pub_sub/errors'
 require 'pub_sub/railtie' if defined?(Rails)

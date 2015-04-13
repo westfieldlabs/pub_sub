@@ -11,14 +11,18 @@ module PubSub
       end
     end
 
+    def list_queues
+      sqs.list_queues.queue_urls
+    end
+
     private
 
     def sqs
-      @sqs ||= AWS::SQS.new
+      @sqs ||= Aws::SQS::Client.new
     end
 
     def queue
-      @queue ||= sqs.queues.create(queue_name)
+      @queue ||= sqs.create_queue(queue_name: queue_name)
     end
 
     def queue_name

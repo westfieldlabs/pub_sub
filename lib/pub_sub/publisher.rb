@@ -1,6 +1,5 @@
 module PubSub
   class Publisher
-    include Singleton
 
     def self.publish(message, async: false)
       if async
@@ -19,17 +18,21 @@ module PubSub
     end
 
     def self.topic
-      instance.topic
+      new.topic
+    end
+
+    def list_topics
+      sns.list_topics.topics
     end
 
     private
 
     def sns
-      @sns ||= AWS::SNS.new
+      @sns ||= Aws::SNS::Client.new
     end
 
     def topic
-      @topic ||= sns.topics.create(topic_name)
+      @topic ||= sns.create_topic(name: topic_name)
     end
 
     def topic_name
