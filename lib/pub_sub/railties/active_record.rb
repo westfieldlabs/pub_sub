@@ -18,7 +18,7 @@ module PubSub
       module ClassMethods
         attr_accessor :publisher_class, :publisher_async
 
-        def publish_changes_with(publisher, async: true)
+        def publish_changes_with(publisher, async: false)
           self.publisher_class = pub_sub_publisher_class(publisher)
           self.publisher_async = async
         end
