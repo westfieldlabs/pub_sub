@@ -3,12 +3,10 @@ module PubSub
     attr_accessor :service_name,
                   :subscriptions,
                   :visibility_timeout,
-                  :logger,
-                  :aws
+                  :logger
 
     def initialize
       @subscriptions = {}
-      @aws = {}
       @visibility_timeout = 1.hour
     end
 
@@ -22,9 +20,10 @@ module PubSub
     end
 
     def aws(key: nil, secret: nil, region: 'us-east-1')
-      @aws['access_key_id'] = key
-      @aws['secret_access_key'] = secret
-      @aws['region'] = region
+      ::Aws.config.update(
+        credentials: Aws::Credentials.new(key, secret),
+        region: region
+      )
     end
   end
 end

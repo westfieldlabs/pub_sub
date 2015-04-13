@@ -12,13 +12,17 @@ module PubSub
 
     def subscribe_to_service(service_identifier)
       PubSub.logger.info("Subscribing to #{service_identifier}")
-      sns.topics.create(service_identifier)
+      sns.create_topic(name: service_identifier)
+    end
+
+    def list_subscriptions
+      sns.list_subscriptions.subscriptions
     end
 
     private
 
     def sns
-      @sns ||= AWS::SNS.new
+      @sns ||= Aws::SNS::Client.new
     end
   end
 end

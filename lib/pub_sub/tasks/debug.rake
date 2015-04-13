@@ -12,39 +12,31 @@ namespace :pub_sub do
     desc 'List information about PubSub queues.'
     task queues: :environment do
       puts 'Queues: ', '----------'
-      sqs.queues.each do |queue|
-        puts " - #{queue_name(queue.arn)} with approx. " \
-             "#{queue.approximate_number_of_messages} messages"
+      PubSub::Queue.new.list_queues.each do |queue|
+        puts " - #{split_name(queue, '/')}"
       end
     end
 
     desc 'List information about the queue subscriptions.'
     task subscriptions: :environment do
       puts 'Subscriptions: ', '----------'
-      sns.subscriptions.sort_by(&:endpoint).each do |subscription|
-        puts " - #{queue_name(subscription.endpoint)} is listening to " \
-             "#{subscription.topic.name}"
+      subs = PubSub::Subscriber.new.list_subscriptions
+      subs.sort_by(&:endpoint).each do |subscription|
+        puts " - #{split_name(subscription.endpoint)} is listening to " \
+             "#{split_name(subscription.topic_arn)}"
       end
     end
 
     desc 'List information about the topics.'
     task topics: :environment do
       puts 'Topics: ', '----------'
-      sns.topics.each do |topic|
-        puts " - #{topic.name}"
+      PubSub::Publisher.new.list_topics.each do |topic|
+        puts " - #{split_name(topic.topic_arn)}"
       end
     end
   end
 
-  def sqs
-    @sqs ||= AWS::SQS.new
-  end
-
-  def sns
-    @sns ||= AWS::SNS.new
-  end
-
-  def queue_name(string)
-    string.split(':').last
+  def split_name(string, delimiter = ':')
+    string.to_s.split(delimiter).last
   end
 end
