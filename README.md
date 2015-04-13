@@ -15,10 +15,7 @@ gem 'pub_sub', git: "https://#{github_auth}@github.com/westfield/pub_sub.git"
 And then execute:
 
     $ bundle
-
-Or install it yourself as:
-
-    $ gem install pub_sub
+    
 
 ## Usage
 
@@ -49,10 +46,10 @@ end
 
 When PubSub receives a message, it performs a couple of checks before processing:
 
-* If the message originates from a service we haven't specified in our initializer (via `config.subscribe_to`), a `PubSub::ServiceUnknown` exception will be logged & raised.
+* If the message originates from a service we haven't subscribed to, a `PubSub::ServiceUnknown` exception will be logged & raised. 
 * If the message originates from a known service, but the message type is not in the list of accepted types for that service, a `PubSub::MessageTypeUnknown` exception will be logged & raised.
 
-If the message passes those validations, it will `classify` the message type (`"retailer_update".classify` # => RetailerUpdate`) and run its `process` method. Data from the message is available inside the message handler via the `data` variable.
+If the message passes those validations, it will `classify` the message type and run its `process` method. Data from the message is available inside the message handler via the `data` variable.
 
 ```ruby
 # app/events/retailer_update.rb
@@ -61,7 +58,7 @@ class RetailerUpdate
 
   def process
   	retailer = Retailer.find_or_initialize_by(retailer_id: data['id'])
-	  retailer.update(name: data['name'])
+	retailer.update(name: data['name'])
   end
 end
 
@@ -70,14 +67,14 @@ end
 
 ### Publishing a message
 
-Inluding `PubSub::MessagePublisher` in your message publisher will make available a `publish` method. This will broadcast your message (along with the data provided from `message_data` method) over PubSub.
+A message publisher requires two things - an include of `PubSub::MessagePublisher` and a `message_data` method.  
 
-Note: `message_data` must be defined in your publisher, otherwise a `NotImplementedError` will be raised.
+Note: If `message_data` is not defined in your publisher, a `NotImplementedError` will be raised.
 
 ```ruby
 # app/events/event_update.rb
 class EventUpdate
-  import PubSub::MessagePublisher
+  include PubSub::MessagePublisher
 
   def initialize(event)
     @event = event
@@ -93,6 +90,25 @@ class EventUpdate
 end
 ```
 
+### Using the message publisher
+``` 
+event = Event.first 
+
+# async is an optional argument which avoids blocking 
+# while the message is sent to the Amazon SNS service. 
+# This delay is usually between 0.5 - 2 seconds.
+EventUpdate.new(event).publish(async: false)
+```
+
+### ActiveRecord integration
+
+To automatically publish a message when its data changes, add the following to your model definition:
+
+```
+class Retailer < ActiveRecord::Base
+  publish_changes_with :retailer_update, async: true
+end
+```
 
 ### Rake tasks
 

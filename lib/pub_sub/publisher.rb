@@ -2,7 +2,19 @@ module PubSub
   class Publisher
     include Singleton
 
-    def self.publish!(message)
+    def self.publish(message, async: false)
+      if async
+        instance.publish_asynchronously(message)
+      else
+        instance.publish_synchronously(message)
+      end
+    end
+
+    def publish_asynchronously(message)
+      Thread.new { publish_synchronously(message) }
+    end
+
+    def publish_synchronously(message)
       topic.publish(message)
     end
 

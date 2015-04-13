@@ -14,5 +14,12 @@ module PubSub
         region:            PubSub.config.aws['region']
       )
     end
+
+    initializer 'pub_sub.initialize' do
+      require 'pub_sub/railties/active_record'
+      ActiveSupport.on_load(:active_record) do
+        ActiveRecord::Base.send :include, PubSub::Railties::ActiveRecord
+      end
+    end
   end
 end
