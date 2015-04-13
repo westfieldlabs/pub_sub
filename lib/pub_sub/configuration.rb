@@ -7,23 +7,24 @@ module PubSub
                   :aws
 
     def initialize
-      @subscriptions = Set.new
+      @subscriptions = {}
+      @aws = {}
       @visibility_timeout = 1.hour
-      @aws = Hashie::Mash.new(
-        access_key_id: nil,
-        secret_access_key: nil,
-        region: 'us-east-1'     # Default region
-      )
     end
 
     def service(service_name)
-      @service_name = "#{service_name}-service"
+      @service_name = service_name.to_s
     end
 
-    def subscribe_to!(*service_names)
-      Array.wrap(service_names).each do |service_name|
-        @subscriptions.add(service_name)
-      end
+    def subscribe_to(service_name, messages: [])
+      service_identifier = PubSub.service_identifier(service_name)
+      @subscriptions[service_identifier] = messages
+    end
+
+    def aws(key: nil, secret: nil, region: 'us-east-1')
+      @aws['access_key_id'] = key
+      @aws['secret_access_key'] = secret
+      @aws['region'] = region
     end
   end
 end
