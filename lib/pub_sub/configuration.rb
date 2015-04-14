@@ -7,7 +7,7 @@ module PubSub
 
     def initialize
       @subscriptions = {}
-      @visibility_timeout = 1.hour
+      @visibility_timeout = 3600 # 1 hour
     end
 
     def service(service_name)

@@ -3,10 +3,14 @@ module PubSub
 
     def self.publish(message, async: false)
       if async
-        instance.publish_asynchronously(message)
+        new.publish_asynchronously(message)
       else
-        instance.publish_synchronously(message)
+        new.publish_synchronously(message)
       end
+    end
+
+    def self.topic
+      new.topic
     end
 
     def publish_asynchronously(message)
@@ -15,10 +19,6 @@ module PubSub
 
     def publish_synchronously(message)
       topic.publish(message)
-    end
-
-    def self.topic
-      new.topic
     end
 
     def list_topics
