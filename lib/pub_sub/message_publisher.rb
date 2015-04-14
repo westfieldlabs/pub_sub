@@ -5,15 +5,14 @@ module PubSub
     end
 
     def message_type
-      self.class.name.underscore
+      klass = self.class.name
+      klass.replace(klass.scan(/[A-Z][a-z]*/).join('_').downcase)
     end
 
     def message_json
-      {
-        sender: PubSub.service_identifier,
-        type: message_type,
-        data: message_data
-      }.to_json
+      JSON.dump(sender: PubSub.service_identifier,
+                type: message_type,
+                data: message_data)
     end
   end
 end
