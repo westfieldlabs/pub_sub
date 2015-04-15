@@ -6,7 +6,7 @@ module PubSub
 
     def process
       validate_message!
-      handler.process
+      handler.process(data)
     end
 
     def validate_message!
@@ -35,8 +35,12 @@ module PubSub
       @payload['type']
     end
 
+    def data
+      @payload['data']
+    end
+
     def handler
-      type.camelize.constantize.new(@payload['data'])
+      type.camelize.constantize
     end
   end
 end

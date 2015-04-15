@@ -12,7 +12,7 @@ module PubSub
             "PubSub received: #{message.message_id} - #{message.body}"
           )
         end
-        Message.process(message.body)
+        Message.new(message.body).process
       end
     end
 

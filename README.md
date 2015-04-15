@@ -58,7 +58,7 @@ class RetailerUpdate
 
   def self.process(data)
   	retailer = Retailer.find_or_initialize_by(retailer_id: data['id'])
-	retailer.update(name: data['name'])
+  	retailer.update(name: data['name'])
   end
 end
 
