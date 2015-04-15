@@ -6,11 +6,11 @@ module PubSub
     end
 
     def poll
-      poller.poll(config) do |message, stats|
+      poller.poll(config) do |message|
         if @verbose
-          PubSub.logger.info("Requests: #{stats.request_count}")
-          PubSub.logger.info("Messages: #{stats.received_message_count}")
-          PubSub.logger.info("Last-timestamp: #{stats.last_message_received_at}")
+          PubSub.logger.info(
+            "PubSub received: #{message.message_id} - #{message.body}"
+          )
         end
         Message.new(message.body).process
       end
