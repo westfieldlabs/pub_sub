@@ -56,9 +56,9 @@ If the message passes those validations, it will `classify` the message type and
 class RetailerUpdate
   include PubSub::MessageHandler
 
-  def process
+  def self.process(data)
   	retailer = Retailer.find_or_initialize_by(retailer_id: data['id'])
-	retailer.update(name: data['name'])
+  	retailer.update(name: data['name'])
   end
 end
 
@@ -86,6 +86,35 @@ class EventUpdate
 
   def event_url
      "https://example.com/event/#{@event.id}"
+  end
+end
+```
+
+### Combined Publisher / Receiver
+
+A service can publish & consume the same kind of message.
+
+```ruby
+class EventUpdate
+  include PubSub::MessagePublisher
+  include PubSub::MessageHandler
+
+  def initialize(event)
+    @event = event
+  end
+
+  def message_data
+    { url: event_url, id: @event.id }
+  end
+
+  def event_url
+     "https://example.com/event/#{@event.id}"
+  end
+
+  # Recieve & process an event_update message
+  def self.process(data)
+    data = Retailer.find_or_initialize_by(data_id: data['id'])
+    data.update(name: data['name'])
   end
 end
 ```
