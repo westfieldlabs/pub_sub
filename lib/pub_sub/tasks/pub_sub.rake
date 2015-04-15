@@ -21,6 +21,7 @@ namespace :pub_sub do
     error = "Not processing message: #{e.inspect}"
     PubSub.logger.error(error)
   rescue => e
+    NewRelic::Agent.notice_error(e) if defined?(NewRelic)
     PubSub.logger.error("Unknown error polling subscriptions: #{e.inspect}")
     PubSub.logger.error(e.backtrace)
     retry
