@@ -13,7 +13,8 @@ namespace :pub_sub do
   end
 
   def start_poll_thread
-    PubSub::Queue.poll
+    queue_url = PubSub::Queue.new.queue_url
+    PubSub::Poller.new(queue_url, verbose?).poll
   rescue PubSub::ServiceUnknown
   rescue PubSub::MessageTypeUnknown
     # Skip messages when we know we're not meant to process them
@@ -23,6 +24,10 @@ namespace :pub_sub do
     PubSub.logger.error("Unknown error polling subscriptions: #{e.inspect}")
     PubSub.logger.error(e.backtrace)
     retry
+  end
+
+  def verbose?
+    ENV['VERBOSE'] == 'true'
   end
 
   def worker_concurrency

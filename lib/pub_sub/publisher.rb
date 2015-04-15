@@ -14,11 +14,19 @@ module PubSub
     end
 
     def publish_asynchronously(message)
-      Thread.new { publish_synchronously(message) }
+      Thread.new do
+        message_id = publish_synchronously(message)
+        PubSub.logger.info(
+          "Message published asynchronously: #{message_id}"
+        )
+      end
     end
 
     def publish_synchronously(message)
-      topic.publish(message)
+      sns.publish(
+        topic_arn: topic_arn,
+        message: message
+      ).message_id
     end
 
     def list_topics
@@ -31,8 +39,10 @@ module PubSub
       @sns ||= Aws::SNS::Client.new
     end
 
-    def topic
-      @topic ||= sns.create_topic(name: topic_name)
+    def topic_arn
+      @topic_arn ||= begin
+        sns.create_topic(name: topic_name).topic_arn
+      end
     end
 
     def topic_name

@@ -10,6 +10,8 @@ module PubSub
 
       module InstanceMethods
         def publish_changes
+          return true unless self.class.publisher_class
+
           async = self.class.publisher_async
           self.class.publisher_class.new(self).publish(async: async)
         end

@@ -6,6 +6,7 @@ require 'pub_sub/railtie' if defined?(Rails)
 
 module PubSub
   autoload :Configuration,    'pub_sub/configuration'
+  autoload :Poller,           'pub_sub/poller'
   autoload :Queue,            'pub_sub/queue'
   autoload :Subscriber,       'pub_sub/subscriber'
   autoload :Publisher,        'pub_sub/publisher'
