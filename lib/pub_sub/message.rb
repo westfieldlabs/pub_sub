@@ -14,14 +14,12 @@ module PubSub
       if messages.nil?
         error = "We received a message from #{sender} but we do " \
                 'not subscribe to that service.'
-        PubSub.logger.error(error)
         fail PubSub::ServiceUnknown, error
       end
 
       unless messages.include?(type)
         error = "We received a message from #{sender} but it was " \
                 "of unknown type #{type}."
-        PubSub.logger.error(error)
         fail PubSub::MessageTypeUnknown, error
       end
     end
