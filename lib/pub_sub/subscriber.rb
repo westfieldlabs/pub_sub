@@ -5,6 +5,8 @@ module PubSub
     end
 
     def subscribe
+      # Ensure our own topic has been created
+      subscribe_to_service(PubSub.service_identifier)
       PubSub.config.subscriptions.keys.each do |service_identifier|
         subscribe_to_service(service_identifier)
       end
