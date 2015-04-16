@@ -50,5 +50,9 @@ module PubSub
       return ENV['RACK_ENV']  if ENV['RACK_ENV']
       'development'
     end
+
+    def stub_responses!
+      Aws.config[:stub_responses] = true
+    end
   end
 end
