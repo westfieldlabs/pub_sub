@@ -6,6 +6,7 @@ module PubSub
         klass.send :extend, ClassMethods
 
         klass.after_save :publish_changes, if: -> { changed? }
+        klass.after_destroy :publish_changes
       end
 
       module InstanceMethods
