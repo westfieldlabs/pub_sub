@@ -17,10 +17,6 @@ module PubSub
       sns.create_topic(name: service_identifier)
     end
 
-    def list_subscriptions
-      sns.list_subscriptions.subscriptions
-    end
-
     private
 
     def sns
