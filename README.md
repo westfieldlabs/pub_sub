@@ -112,8 +112,9 @@ class EventUpdate
 
   # Recieve & process an event_update message
   def self.process(data)
-    data = Retailer.find_or_initialize_by(data_id: data['id'])
-    data.update(name: data['name'])
+    retailer = Retailer.find_or_initialize_by(data_id: data['id'])
+    retailer_name = Api.get(data['uri'])["data"]["name"]
+    retailer.update(name: retailer_name)
   end
 end
 ```
