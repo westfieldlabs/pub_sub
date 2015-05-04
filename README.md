@@ -171,3 +171,8 @@ You must run `rake pub_sub:subscribe` once to register your personal version of 
 
 Be sure you are familiar with the Development Process section of the [Developer introduction](https://wiki.westfieldlabs.com/display/WL/Developer+introduction+documentation).
 
+### Message design and SQS constraints
+
+Generally it's recommended to provide the absolute minimum of data in a published message - a uri and/or ID for each event should be plenty.
+
+The main reason for this is that SQS guarantees that every message will be received at least once. And that's _it_. You cannot rely on the order of messages, or that the same message won't be delivered n times. By relying on an API call based on ID or provided uri, which shouldn't change, we can make sure that an application gets the canonical, most up-to-date data based on a message.
