@@ -29,10 +29,6 @@ module PubSub
       ).message_id
     end
 
-    def list_topics
-      sns.list_topics.topics
-    end
-
     private
 
     def sns
