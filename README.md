@@ -2,7 +2,6 @@
 
 This gem encapsulates the common logic for publishing and subscribing to events from services.
 
-
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -14,8 +13,9 @@ gem 'pub_sub', git: "https://#{github_auth}@github.com/westfield/pub_sub.git"
 
 And then execute:
 
-    $ bundle
-
+```sh
+$ bundle
+```
 
 ## Usage
 
@@ -40,7 +40,6 @@ PubSub.configure do |config|
   )
 end
 ```
-
 
 ### Receiving a message
 
@@ -143,12 +142,17 @@ end
 
 There are a few rake tasks made available for working with the message queues and subscriptions.
 
-* `rake pub_sub:poll` - this task will receive messages from the queue(s) and dispatch them to the appropriate handler if one can be found. It is multi-threaded with 2 threads by default, but this can be changed by setting the `PUB_SUB_WORKER_CONCURRENCY` environment variable.
-
-* `rake pub_sub:subscribe` - this task will subscribe the service to the message queues specified in the config.
-
+* `rake pub_sub:subscribe` - will subscribe the service to the message queues specified in the config. You must run this at least once as it registers your service with the queue.
+* `rake pub_sub:poll` - starts receiving messages from the queue(s) and dispatching them to the appropriate handler(s) if available. It is multi-threaded with 2 threads by default, but this can be changed by setting the `PUB_SUB_WORKER_CONCURRENCY` environment variable. This can't be run until after `pub_sub:subscribe` has been run.
 * `rake pub_sub:debug` - this will print out information about the state of queues, topics & subscriptions.
 
+If hosting on Heroku your `Procfile` ought to include a line like
+
+```
+worker: bundle exec rake pub_sub:poll
+```
+
+Note you don't need any additional workers to publish, only to subscribe.
 
 ### Errors
 
@@ -156,3 +160,14 @@ There are two custom exceptions which may be raised during processing:
 
 * `PubSub::ServiceUnknown` will be raised when a message arrives but the origin service is not configured in the initializer block (via `config.subscribe_to`)
 * `PubSub::MessageTypeUnknown` will be raised if a message arrives from a configured service, but is *not* in the list of acceptable messages.
+
+### Developing with pub_sub
+
+When running in your local environment you'll use the [Development Proxy](https://github.com/westfield/development_proxy) to manage the starting of your services and their pointing to `api.development.westfield.io/...`.
+
+You must run `rake pub_sub:subscribe` once to register your personal version of the service with the queue, then you may run  `rake pub_sub:poll` to start receiving messages from your own queues.  The services suffix their `service_identifier` with a local identifier (your system username) so your development and test messages don't pollute the production or UAT services.
+
+## New to Westfield?
+
+Be sure you are familiar with the Development Process section of the [Developer introduction](https://wiki.westfieldlabs.com/display/WL/Developer+introduction+documentation).
+
