@@ -1,13 +1,13 @@
 # Pub/Sub
 
-This gem encapsulates the common logic for publishing and subscribing to events from services.
+This gem encapsulates the common logic for publishing and subscribing to events from services via AWS SNS and SQS.
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'pub_sub', git: "https://#{github_auth}@github.com/westfield/pub_sub.git"
+gem 'pub_sub', github: 'westfield/pub_sub'
 
 ```
 
@@ -25,12 +25,12 @@ Configuration is handled with an initializer as below.
 ```ruby
 # config/initializers/pub_sub.rb
 PubSub.configure do |config|
-  # The name of this service
-  config.service 'event'
+  # The name of this service. Topics and queues will be named foo-service-[env].
+  config.service 'foo'
 
   # Listen for the specified messages from one or more services
-  config.subscribe_to 'store',  messages: ['retailer_update', 'store_update']
-  config.subscribe_to 'centre', messages: ['centre_update']
+  config.subscribe_to 'barbaz', messages: ['bar_update', 'baz_update']
+  config.subscribe_to 'wibble', messages: ['wibble_update']
 
   # Credentials and region for Amazon AWS (for SNS/SQS)
   config.aws(
@@ -51,18 +51,21 @@ When PubSub receives a message, it performs a couple of checks before processing
 If the message passes those validations, it will `classify` the message type and run its `process` method. Data from the message is available inside the message handler via the `data` variable.
 
 ```ruby
-# app/events/retailer_update.rb
-class RetailerUpdate
+# app/events/foo_update.rb
+require 'open-uri'
+
+class FooUpdate
   include PubSub::MessageHandler
 
+  # Recieve & process an foo_update message
   def self.process(data)
-  	retailer = Retailer.find_or_initialize_by(retailer_id: data['id'])
-  	retailer.update(name: data['name'])
+    foo = Foo.find_or_initialize_by(id: data['id'])
+    foo_name = JSON.parse(open(data['uri']).read)['data']['name']
+    foo.update(name: foo_name)
   end
 end
 
 ```
-
 
 ### Publishing a message
 
@@ -71,20 +74,20 @@ A message publisher requires two things - an include of `PubSub::MessagePublishe
 Note: If `message_data` is not defined in your publisher, a `NotImplementedError` will be raised.
 
 ```ruby
-# app/events/event_update.rb
-class EventUpdate
+# app/events/foo_update.rb
+class FooUpdate
   include PubSub::MessagePublisher
 
-  def initialize(event)
-    @event = event
+  def initialize(foo)
+    @foo = foo
   end
 
   def message_data
-    { url: event_url, id: @event.id }
+    { url: foo_url, id: @foo.id }
   end
 
-  def event_url
-     "https://example.com/event/#{@event.id}"
+  def foo_url
+    "https://example.com/foos/#{@foo.id}"
   end
 end
 ```
@@ -94,27 +97,30 @@ end
 A service can publish & consume the same kind of message.
 
 ```ruby
-class EventUpdate
+# app/events/foo_update.rb
+require 'open-uri'
+
+class FooUpdate
   include PubSub::MessagePublisher
   include PubSub::MessageHandler
 
-  def initialize(event)
-    @event = event
+  # Recieve & process an foo_update message
+  def self.process(data)
+    foo = Foo.find_or_initialize_by(id: data['id'])
+    foo_name = JSON.parse(open(data['uri']).read)['data']['name']
+    foo.update(name: foo_name)
+  end
+
+  def initialize(foo)
+    @foo = foo
   end
 
   def message_data
-    { url: event_url, id: @event.id }
+    { url: foo_url, id: @foo.id }
   end
 
-  def event_url
-     "https://example.com/event/#{@event.id}"
-  end
-
-  # Recieve & process an event_update message
-  def self.process(data)
-    retailer = Retailer.find_or_initialize_by(data_id: data['id'])
-    retailer_name = Api.get(data['uri'])["data"]["name"]
-    retailer.update(name: retailer_name)
+  def foo_url
+    "https://example.com/foos/#{@foo.id}"
   end
 end
 ```
@@ -126,14 +132,14 @@ The trade-off is that if a message fails to send for some reason, it won't fail 
 
 ```ruby
 # Example of using a message publisher with async
-EventUpdate.new(Event.first).publish(async: true)
+FooUpdate.new(Foo.first).publish(async: true)
 ```
 
 ### ActiveRecord integration
 
 To automatically publish a message when its data changes, add the following to your model definition:
 
-```
+```ruby
 class Retailer < ActiveRecord::Base
   publish_changes_with :retailer_update, async: true
 end
@@ -167,16 +173,14 @@ There are two custom exceptions which may be raised during processing:
 
 ### Developing with pub_sub
 
-When running in your local environment you'll use the [Development Proxy](https://github.com/westfield/development_proxy) to manage the starting of your services and their pointing to `api.development.westfield.io/...`.
-
-You must run `rake pub_sub:subscribe` once to register your personal version of the service with the queue, then you may run  `rake pub_sub:poll` to start receiving messages from your own queues.  The services suffix their `service_identifier` with a local identifier (your system username) so your development and test messages don't pollute the production or UAT services.
-
-## New to Westfield?
-
-Be sure you are familiar with the Development Process section of the [Developer introduction](https://wiki.westfieldlabs.com/display/WL/Developer+introduction+documentation).
+You must run `rake pub_sub:subscribe` once to register your personal version of the service with the queue, then you may run `rake pub_sub:poll` to start receiving messages from your own queues. The services suffix their `service_identifier` with a local identifier (your system username) so your development and test messages don't pollute the production or UAT services.
 
 ### Message design and SQS constraints
 
 Generally it's recommended to provide the absolute minimum of data in a published message - a URI and/or ID for each event should be plenty.
 
 The main reason for this is that SQS guarantees that every message will be received at least once. And that's _it_. You cannot rely on the order of messages, or that the same message won't be delivered n times. By relying on an API call based on ID or provided URI, which shouldn't change, we can make sure that an application gets the canonical, most up-to-date data based on a message.
+
+## Ruby Support
+
+* 2.2.1+
