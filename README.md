@@ -145,7 +145,10 @@ There are a few rake tasks made available for working with the message queues an
 
 * `rake pub_sub:subscribe` - will subscribe the service to the message queues specified in the config. You must run this at least once as it registers your service with the queue.
 * `rake pub_sub:poll` - starts receiving messages from the queue(s) and dispatching them to the appropriate handler(s) if available. It is multi-threaded with 2 threads by default, but this can be changed by setting the `PUB_SUB_WORKER_CONCURRENCY` environment variable. This can't be run until after `pub_sub:subscribe` has been run.
-* `rake pub_sub:debug` - this will print out information about the state of queues, topics & subscriptions.
+* `rake pub_sub:debug:all` - prints out information about the state of queues, topics & subscriptions.
+* `rake pub_sub:debug:queues` - prints out information about the state of queues including the approximate number of messages in the queue.
+* `rake pub_sub:debug:subscriptions` - prints out information about the state of subscriptions.
+* `rake pub_sub:debug:topics` - prints out information about the state of topics.
 
 If hosting on Heroku your `Procfile` ought to include a line like
 
