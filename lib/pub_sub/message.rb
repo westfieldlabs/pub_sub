@@ -1,7 +1,7 @@
 module PubSub
   class Message
     def initialize(payload)
-      @payload = JSON.parse(payload)
+      @payload = JSON.parse(JSON.parse(payload)['Message'])
     end
 
     def process
