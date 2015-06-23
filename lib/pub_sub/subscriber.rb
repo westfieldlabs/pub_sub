@@ -31,6 +31,8 @@ module PubSub
 
     private
 
+    delegate :queue_url, :queue_arn, to: :queue
+
     def policy_attributes(topic_arns)
       {
         Version: '2008-10-17',
@@ -46,18 +48,12 @@ module PubSub
       }
     end
 
-    def queue_arn
-      @queue_arn ||= Aws::SQS::Client.new.get_queue_attributes(
-        queue_url: queue_url, attribute_names: ["QueueArn"]
-      ).attributes["QueueArn"]
-    end
-
-    def queue_url
-      @queue_url ||= Queue.new.queue_url
-    end
-
     def sns
       @sns ||= Aws::SNS::Client.new
+    end
+
+    def queue
+      @queue ||= Queue.new
     end
   end
 end
