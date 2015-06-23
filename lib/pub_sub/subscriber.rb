@@ -11,6 +11,8 @@ module PubSub
       set_queue_policy(topics.map(&:arn))
     end
 
+    private
+
     def subscribe_to_service(service_identifier)
       topic = Aws::SNS::Topic.new(sns.create_topic(name: service_identifier).topic_arn)
       topic.subscribe(endpoint: queue_arn, protocol: 'sqs')
@@ -28,8 +30,6 @@ module PubSub
         }
       )
     end
-
-    private
 
     delegate :queue_url, :queue_arn, to: :queue
 
