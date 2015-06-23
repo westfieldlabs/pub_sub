@@ -7,7 +7,7 @@ module PubSub
     end
 
     def queue_arn
-      @queue_arn ||= Aws::SQS::Client.new.get_queue_attributes(
+      @queue_arn ||= sqs.get_queue_attributes(
         queue_url: queue_url, attribute_names: ["QueueArn"]
       ).attributes["QueueArn"]
     end
