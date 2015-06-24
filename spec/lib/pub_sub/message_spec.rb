@@ -17,18 +17,13 @@ RSpec.describe PubSub::Message do
       }'
     }
   }
-  let(:payload) { raw_sns_message['body'] }
   subject { described_class.new(payload) }
 
   describe '#process' do
     let(:message) {
       {
-        "sender" => "entity-service-prod",
-        "type" => "entity_update",
-        "data" => {
-          "uri" => "https://example.com/entity/11355",
-          "id" => 11355
-        }
+        "uri" => "https://example.com/entity/11355",
+        "id" => 11355
       }
     }
     class EntityUpdate
@@ -39,10 +34,20 @@ RSpec.describe PubSub::Message do
           'entity-service-prod'
         ).and_return(['entity_update'])
       end
+      context 'subscriptions with RawMessageDelivery=false' do
+        let(:payload) { raw_sns_message['body'] }
+        it 'processes the message' do
+          expect(EntityUpdate).to receive(:process).with(message)
+          subject.process
+        end
+      end
 
-      it 'processes the message' do
-        expect(EntityUpdate).to receive(:process).with(message['data'])
-        subject.process
+      context 'subscriptions with RawMessageDelivery=true' do
+        let(:payload) { "{\"sender\":\"entity-service-prod\",\"type\":\"entity_update\",\"data\":{\"uri\":\"https://example.com/entity/11355\",\"id\":11355}}" }
+        it 'processes the message' do
+          expect(EntityUpdate).to receive(:process).with(message)
+          subject.process
+        end
       end
     end
   end
