@@ -6,6 +6,12 @@ module PubSub
       end
     end
 
+    def queue_arn
+      @queue_arn ||= sqs.get_queue_attributes(
+        queue_url: queue_url, attribute_names: ["QueueArn"]
+      ).attributes["QueueArn"]
+    end
+
     private
 
     def sqs

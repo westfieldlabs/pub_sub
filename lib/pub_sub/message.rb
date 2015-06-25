@@ -1,7 +1,13 @@
 module PubSub
   class Message
     def initialize(payload)
-      @payload = JSON.parse(payload)
+      content = JSON.parse(payload)
+      if content.is_a?(Hash) && content.has_key?('Message')
+        # Handle the RawMessageDelivery attribute on the subscription being
+        # set to false
+        content = JSON.parse(content['Message'])
+      end
+      @payload = content
     end
 
     def process

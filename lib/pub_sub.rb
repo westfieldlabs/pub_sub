@@ -1,4 +1,5 @@
 require 'aws-sdk'
+require 'active_support/all'
 require 'json'
 require 'pub_sub/version'
 require 'pub_sub/errors'
