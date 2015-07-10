@@ -14,8 +14,8 @@ module PubSub
       @service_name = service_name.to_s
     end
 
-    def subscribe_to(service_name, messages: [])
-      service_identifier = PubSub.service_identifier(service_name)
+    def subscribe_to(service_name, messages: [], service_identifier: nil)
+      service_identifier ||= PubSub.service_identifier(service_name)
       @subscriptions[service_identifier] = messages
     end
 
