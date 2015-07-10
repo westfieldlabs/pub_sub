@@ -166,9 +166,6 @@ Note you don't need any additional workers to publish, only to subscribe.
 
 ### Errors
 
-There are two custom exceptions which may be raised during processing:
-
-* `PubSub::ServiceUnknown` will be raised when a message arrives but the origin service is not configured in the initializer block (via `config.subscribe_to`)
 * `PubSub::MessageTypeUnknown` will be raised if a message arrives from a configured service, but is *not* in the list of acceptable messages.
 
 ### Developing with pub_sub
