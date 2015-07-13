@@ -7,7 +7,7 @@ describe PubSub do
     end
   end
 
- describe 'customer service identifier' do
+ describe 'custom service identifier' do
     let(:object) { { id: 123, name: 'Example Message' } }
     let(:publisher) { ExampleUpdate.new(object) }
     let(:message) do
