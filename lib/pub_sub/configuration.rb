@@ -1,4 +1,7 @@
 module PubSub
+
+  REGIONS = %w(us-east-1 us-west-1 eu-west-1 ap-southeast-1)
+
   class Configuration
     attr_accessor :service_name,
                   :subscriptions,
@@ -25,8 +28,7 @@ module PubSub
         secret: ENV['AWS_SECRET_ACCESS_KEY'],
         region: (ENV['AWS_REGION'] || 'us-east-1')) # TODO: Remove the hardcoded region
       ::Aws.config.update(
-        credentials: Aws::Credentials.new(key, secret),
-        region: region
+        credentials: Aws::Credentials.new(key, secret)
       )
     end
 
