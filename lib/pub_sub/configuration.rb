@@ -1,4 +1,7 @@
 module PubSub
+
+  REGIONS = %w(us-east-1 us-west-1 eu-west-1 ap-southeast-1)
+
   class Configuration
     attr_accessor :service_name,
                   :subscriptions,
@@ -19,10 +22,9 @@ module PubSub
       @subscriptions[service_identifier] = messages
     end
 
-    def aws(key: nil, secret: nil, region: 'us-east-1')
+    def aws(key: nil, secret: nil)
       ::Aws.config.update(
-        credentials: Aws::Credentials.new(key, secret),
-        region: region
+        credentials: Aws::Credentials.new(key, secret)
       )
     end
   end

@@ -1,5 +1,10 @@
 module PubSub
   class Queue
+
+    def initialize(region: )
+      @sqs ||= Aws::SQS::Client.new(region: region)
+    end
+
     def queue_url
       @queue_url ||= begin
         sqs.create_queue(queue_name: queue_name).queue_url
@@ -15,7 +20,7 @@ module PubSub
     private
 
     def sqs
-      @sqs ||= Aws::SQS::Client.new
+      @sqs
     end
 
     def queue_name
