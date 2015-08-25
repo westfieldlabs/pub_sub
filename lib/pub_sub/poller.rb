@@ -16,11 +16,9 @@ module PubSub
             Message.new(message.body).process
           end
         end
-        puts "IDLED"
         Breaker.use_next_breaker
       end
     rescue CB2::BreakerOpen
-      puts "BROKEN"
       Breaker.use_next_breaker
       sleep 1
       retry
@@ -29,8 +27,6 @@ module PubSub
     private
 
     def poller
-      puts PubSub::Queue.new.queue_url
-      puts client
       Aws::SQS::QueuePoller.new(PubSub::Queue.new.queue_url, client: client)
     end
 
