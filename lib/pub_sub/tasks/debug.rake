@@ -12,7 +12,7 @@ namespace :pub_sub do
     desc 'List information about PubSub queues.'
     task queues: :environment do
       puts 'Queues: ', '----------'
-      PubSub::REGIONS.each do |region|
+      PubSub.config.regions.each do |region|
         sqs = Aws::SQS::Client.new(region: region)
         sqs.list_queues.queue_urls.each do |url|
           message_count = sqs.get_queue_attributes(
@@ -27,7 +27,7 @@ namespace :pub_sub do
     desc 'List information about the queue subscriptions.'
     task subscriptions: :environment do
       puts 'Subscriptions: ', '----------'
-      PubSub::REGIONS.each do |region|
+      PubSub.config.regions.each do |region|
         subs = Aws::SNS::Client.new(region: region).list_subscriptions.subscriptions
         subs.sort_by(&:endpoint).each do |subscription|
           puts " - #{split_name(subscription.endpoint)} is listening to " \
@@ -39,7 +39,7 @@ namespace :pub_sub do
     desc 'List information about the topics.'
     task topics: :environment do
       puts 'Topics: ', '----------'
-      PubSub::REGIONS.each do |region|
+      PubSub.config.regions.each do |region|
         Aws::SNS::Client.new(region: region).list_topics.topics.each do |topic|
           puts " - #{split_name(topic.topic_arn)} in #{region}"
         end

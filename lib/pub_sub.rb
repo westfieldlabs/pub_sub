@@ -1,6 +1,8 @@
 require 'aws-sdk'
 require 'active_support/all'
 require 'json'
+require 'cb2'
+require 'redis'
 require 'pub_sub/version'
 require 'pub_sub/errors'
 require 'pub_sub/railtie' if defined?(Rails)
@@ -10,6 +12,7 @@ module PubSub
   autoload :Poller,           'pub_sub/poller'
   autoload :Queue,            'pub_sub/queue'
   autoload :Subscriber,       'pub_sub/subscriber'
+  autoload :Breaker,          'pub_sub/breaker'
   autoload :Publisher,        'pub_sub/publisher'
   autoload :Message,          'pub_sub/message'
   autoload :MessageHandler,   'pub_sub/message_handler'
