@@ -7,15 +7,12 @@ module PubSub
     end
 
     def poll
-      thing = poller
-      puts "got here"
-      thing.poll(idle_timeout: 60) do |message|
+      poller.poll(idle_timeout: 60) do |message|
         if @verbose
           PubSub.logger.info(
             "PubSub received: #{message.message_id} - #{message.body}"
           )
         end
-        puts "got one!"
         Message.new(message.body).process
       end
     end

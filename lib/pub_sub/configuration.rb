@@ -1,12 +1,11 @@
 module PubSub
 
-  REGIONS = %w(us-east-1 us-west-1 eu-west-1 ap-southeast-1)
-
   class Configuration
     attr_accessor :service_name,
                   :subscriptions,
                   :visibility_timeout,
-                  :logger
+                  :logger,
+                  :regions
 
     def initialize
       @subscriptions = {}
@@ -23,10 +22,11 @@ module PubSub
     end
 
     # Configure AWS credentials and region. Omit (nil) any of the parameters to use environment defaults
-    def aws(
-        key: ENV['AWS_ACCESS_KEY_ID'],
+    def aws(key: ENV['AWS_ACCESS_KEY_ID'],
         secret: ENV['AWS_SECRET_ACCESS_KEY'],
-        region: (ENV['AWS_REGION'] || 'us-east-1')) # TODO: Remove the hardcoded region
+        regions: (%w(us-east-1 us-west-1 eu-west-1 ap-southeast-1))
+        )
+      @regions = regions
       ::Aws.config.update(
         credentials: Aws::Credentials.new(key, secret)
       )

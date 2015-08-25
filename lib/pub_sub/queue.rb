@@ -1,7 +1,7 @@
 module PubSub
   class Queue
 
-    def initialize(region: )
+    def initialize
       @sqs ||= Aws::SQS::Client.new(region: region)
     end
 
