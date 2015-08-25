@@ -50,6 +50,16 @@ namespace :pub_sub do
       queue_url = PubSub::Queue.new(region: region).queue_url
       PubSub::Poller.new(queue_url, verbose?, region: region)
     end
+    PubSub::Poller.new(verbose?).poll
+  rescue PubSub::ServiceUnknown => e
+    # Skip messages when we know we're not meant to process them
+    error = "Not processing message: #{e.inspect}"
+    PubSub.logger.error(error)
+  rescue => e
+    NewRelic::Agent.notice_error(e) if defined?(NewRelic)
+    PubSub.logger.error("Unknown error polling subscriptions: #{e.inspect}")
+    PubSub.logger.error(e.backtrace)
+    retry
   end
 
   def verbose?
