@@ -1,6 +1,6 @@
 module PubSub
   class Poller
-    def initialize(queue_url, verbose = false)
+    def initialize(verbose = false)
       @verbose = verbose
     end
 
