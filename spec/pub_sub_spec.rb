@@ -8,9 +8,6 @@ describe PubSub do
     end
   end
 
-  describe 'message handler' do
-  end
-
   describe 'message publisher' do
     let(:object) { { id: 123, name: 'Example Message' } }
     let(:publisher) { ExampleUpdate.new(object) }
