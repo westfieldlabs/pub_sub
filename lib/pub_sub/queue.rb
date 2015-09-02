@@ -12,6 +12,10 @@ module PubSub
       ).attributes["QueueArn"]
     end
 
+    def queue_attributes(attribute_names)
+      sqs.get_queue_attributes(queue_url: queue_url, attribute_names: attribute_names).values.first
+    end
+
     private
 
     def sqs
