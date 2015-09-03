@@ -21,8 +21,8 @@ module PubSub
 
     # Configure AWS credentials and region. Omit (nil) any of the parameters to use environment defaults
     def aws(
-        key: (ENV['AWS_ACCESS_KEY_ID'] || ENV['AWS_KEY_ID']),
-        secret: (ENV['AWS_SECRET_ACCESS_KEY'] || ENV['AWS_ACCESS_KEY']),
+        key: ENV['AWS_ACCESS_KEY_ID'],
+        secret: ENV['AWS_SECRET_ACCESS_KEY'],
         region: (ENV['AWS_REGION'] || 'us-east-1')) # TODO: Remove the hardcoded region
       ::Aws.config.update(
         credentials: Aws::Credentials.new(key, secret),
