@@ -46,10 +46,8 @@ module PubSub
     end
 
     def rails_env
-      return Rails.env        if defined?(Rails)
-      return ENV['RAILS_ENV'] if ENV['RAILS_ENV']
-      return ENV['RACK_ENV']  if ENV['RACK_ENV']
-      'development'
+      return Rails.env if defined?(Rails)
+      ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'development'
     end
 
     def stub_responses!
