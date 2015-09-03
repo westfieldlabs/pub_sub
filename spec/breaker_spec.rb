@@ -1,9 +1,3 @@
-# Test
-# current_breaker
-
-# current_region
-
-# use_next_breaker
 require 'spec_helper'
 describe PubSub::Breaker do
 
