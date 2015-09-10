@@ -7,7 +7,7 @@ module PubSub
     def poll
       loop do
         Breaker.current_breaker.run do
-          poller.poll(idle_timeout: 60) do |message|
+          poller.poll(config) do |message|
             if @verbose
               PubSub.logger.info(
                 "PubSub received: #{message.message_id} - #{message.body}"
@@ -25,6 +25,13 @@ module PubSub
     end
 
     private
+
+    def config
+      {
+        visibility_timeout: PubSub.config.visibility_timeout,
+        idle_timeout: PubSub.config.idle_timeout,
+      }
+    end
 
     def poller
       Aws::SQS::QueuePoller.new(PubSub::Queue.new.queue_url, client: client)
