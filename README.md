@@ -45,7 +45,6 @@ end
 
 When PubSub receives a message, it performs a couple of checks before processing:
 
-* If the message originates from a service we haven't subscribed to, a `PubSub::ServiceUnknown` exception will be logged & raised.
 * If the message originates from a known service, but the message type is not in the list of accepted types for that service, a `PubSub::MessageTypeUnknown` exception will be logged & raised.
 
 If the message passes those validations, it will `classify` the message type and run its `process` method. Data from the message is available inside the message handler via the `data` variable.
@@ -168,7 +167,6 @@ Note you don't need any additional workers to publish, only to subscribe.
 
 There are two custom exceptions which may be raised during processing:
 
-* `PubSub::ServiceUnknown` will be raised when a message arrives but the origin service is not configured in the initializer block (via `config.subscribe_to`)
 * `PubSub::MessageTypeUnknown` will be raised if a message arrives from a configured service, but is *not* in the list of acceptable messages.
 
 ### Developing with pub_sub
