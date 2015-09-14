@@ -6,7 +6,7 @@ module PubSub
 
     def poll
       loop do
-        Breaker.current_breaker.run do
+        Breaker.run do
           poller.poll(config) do |message|
             if @verbose
               PubSub.logger.info(
@@ -18,10 +18,6 @@ module PubSub
         end
         Breaker.use_next_breaker
       end
-    rescue CB2::BreakerOpen
-      Breaker.use_next_breaker
-      sleep 1
-      retry
     end
 
     private
