@@ -19,16 +19,12 @@ module PubSub
       end
 
       def publish_synchronously(message)
-        Breaker.current_breaker.run do
+        Breaker.run do
           sns.publish(
             topic_arn: topic_arn,
             message: message
           ).message_id
         end
-      rescue CB2::BreakerOpen
-        Breaker.use_next_breaker
-        sleep 1
-        retry
       end
 
       private
@@ -38,13 +34,9 @@ module PubSub
       end
 
       def topic_arn
-        Breaker.current_breaker.run do
+        Breaker.run do
           sns.create_topic(name: topic_name).topic_arn
         end
-      rescue CB2::BreakerOpen
-        Breaker.use_next_breaker
-        sleep 1
-        retry
       end
 
       def topic_name

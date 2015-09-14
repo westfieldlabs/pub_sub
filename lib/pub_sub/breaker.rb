@@ -6,6 +6,14 @@ module PubSub
 
     class << self
 
+      def run(&block)
+        current_breaker.run(&block)
+      rescue CB2::BreakerOpen
+        Breaker.use_next_breaker
+        sleep 1
+        retry
+      end
+
       def current_breaker
         all_breakers[current_breaker_idx]
       end
