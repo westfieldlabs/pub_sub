@@ -17,6 +17,11 @@ module PubSub
 
     def validate_message!
       messages = PubSub.config.subscriptions[sender]
+      if messages.nil?
+        warning = "WARN: We received a message from #{sender} but we do " \
+                'not subscribe to that service.'
+        PubSub.logger.warn(warning)
+      end
       unless messages.include?(type)
         error = "We received a message from #{sender} but it was " \
                 "of unknown type #{type}."
