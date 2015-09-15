@@ -13,9 +13,8 @@ namespace :pub_sub do
   end
 
   def start_poll_thread
-    queue_url = PubSub::Queue.new.queue_url
-    PubSub::Poller.new(queue_url, verbose?).poll
-  rescue PubSub::MessageTypeUnknown => e
+    PubSub::Poller.new(verbose?).poll
+  rescue PubSub::ServiceUnknown => e
     # Skip messages when we know we're not meant to process them
     error = "Not processing message: #{e.inspect}"
     PubSub.logger.error(error)

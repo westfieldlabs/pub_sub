@@ -1,15 +1,18 @@
 module PubSub
   class Queue
+
     def queue_url
-      @queue_url ||= begin
+      Breaker.run do
         sqs.create_queue(queue_name: queue_name).queue_url
       end
     end
 
     def queue_arn
-      @queue_arn ||= sqs.get_queue_attributes(
-        queue_url: queue_url, attribute_names: ["QueueArn"]
-      ).attributes["QueueArn"]
+      Breaker.run do
+        sqs.get_queue_attributes(
+          queue_url: queue_url, attribute_names: ["QueueArn"]
+        ).attributes["QueueArn"]
+      end
     end
 
     def queue_attributes(attribute_names)
@@ -19,7 +22,7 @@ module PubSub
     private
 
     def sqs
-      @sqs ||= Aws::SQS::Client.new
+      Aws::SQS::Client.new(region: Breaker.current_region)
     end
 
     def queue_name

@@ -2,6 +2,8 @@
 
 This gem encapsulates the common logic for publishing and subscribing to events from services via AWS SNS and SQS.
 
+It relies on https://github.com/pedro/cb2 and hence redis to circuit break in case of problems with AWS.
+
 ## Installation
 
 Add this line to your application's Gemfile:
