@@ -26,7 +26,7 @@ module PubSub
         PubSub.logger.warn warning
         raise PubSub::ServiceUnknown, warning
       elsif !messages.include?(type)
-        error = "We received a message from #{sender} but it was of unknown type #{type}"
+        error = "#{PubSub.config.service_name} received a message from #{sender} but it was of unknown type #{type}"
         fail PubSub::MessageTypeUnknown, error
       end
     end
