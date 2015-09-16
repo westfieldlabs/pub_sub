@@ -4,12 +4,14 @@ module PubSub
     attr_accessor :service_name,
                   :subscriptions,
                   :visibility_timeout,
+                  :idle_timeout,
                   :logger,
                   :regions
 
     def initialize
       @subscriptions = {}
       @visibility_timeout = 3600 # 1 hour
+      @idle_timeout = 60
     end
 
     def service(service_name)
