@@ -34,6 +34,7 @@ RSpec.describe PubSub::Message do
           'entity-service-prod'
         ).and_return(['entity_update'])
       end
+
       context 'subscriptions with RawMessageDelivery=false' do
         let(:payload) { raw_sns_message['body'] }
         it 'processes the message' do
@@ -48,6 +49,42 @@ RSpec.describe PubSub::Message do
           expect(EntityUpdate).to receive(:process).with(message)
           subject.process
         end
+      end
+    end
+  end
+
+
+  describe 'messages are filtered out' do
+    let(:message) {
+      {
+        "uri" => "https://example.com/entity/11355",
+        "id" => 11355
+      }
+    }
+    class EntityUpdate
+    end
+
+    context 'on unknown subscriptions' do
+      let(:payload) { raw_sns_message['body'] }
+      it 'quietly' do
+        allow(PubSub.config.subscriptions).to receive(:[]).with(
+          'entity-service-prod'
+        ).and_return(nil)
+        allow(PubSub.config).to receive_message_chain("logger.warn").and_return(anything())
+        # first, make sure the validator throws an exception
+        expect{subject.validate_message!}.to raise_error(PubSub::ServiceUnknown)
+        # then, make sure `process` does not
+        subject.process
+      end
+    end
+
+    context 'on unknown message types' do
+      let(:payload) { raw_sns_message['body'] }
+      it 'with exception' do
+        allow(PubSub.config.subscriptions).to receive(:[]).with(
+          'entity-service-prod'
+        ).and_return(['unknown_type'])
+        expect{subject.process}.to raise_error(PubSub::MessageTypeUnknown)
       end
     end
   end
