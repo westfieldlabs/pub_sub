@@ -21,7 +21,7 @@ module PubSub
 
     def validate_message!
       messages = PubSub.config.subscriptions[sender]
-      if messages.blank?
+      if messages.nil? || messages.empty?
         warning = "#{PubSub.config.service_name} received a message from #{sender} but no matching subscription exists for that sender"
         PubSub.logger.warn warning
         raise PubSub::ServiceUnknown, warning
