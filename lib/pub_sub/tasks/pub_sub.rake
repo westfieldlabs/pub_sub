@@ -1,6 +1,6 @@
 namespace :pub_sub do
   desc 'Poll the queue for updates'
-  task poll: :environment do
+  task poll: [:environment, :subscribe] do
     worker_concurrency.times.map do
       sleep 5 # Allow things to load to avoid circular reference errors
       Thread.new { start_poll_thread }
