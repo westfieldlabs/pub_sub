@@ -64,27 +64,29 @@ RSpec.describe PubSub::Message do
     class EntityUpdate
     end
 
-    context 'on unknown subscriptions' do
+    context 'quietly' do
       let(:payload) { raw_sns_message['body'] }
-      it 'quietly' do
+
+      it 'on unknown senders' do
         allow(PubSub.config.subscriptions).to receive(:[]).with(
           'entity-service-prod'
         ).and_return(nil)
-        allow(PubSub.config).to receive_message_chain("logger.warn").and_return(anything())
+        allow(PubSub.config).to receive_message_chain("logger.error").and_return(anything())
         # first, make sure the validator throws an exception
         expect{subject.validate_message!}.to raise_error(PubSub::ServiceUnknown)
         # then, make sure `process` does not
         subject.process
       end
-    end
 
-    context 'on unknown message types' do
-      let(:payload) { raw_sns_message['body'] }
-      it 'with exception' do
+      it 'on unknown types' do
         allow(PubSub.config.subscriptions).to receive(:[]).with(
           'entity-service-prod'
         ).and_return(['unknown_type'])
-        expect{subject.process}.to raise_error(PubSub::MessageTypeUnknown)
+        allow(PubSub.config).to receive_message_chain("logger.error").and_return(anything())
+        # first, make sure the validator throws an exception
+        expect{subject.validate_message!}.to raise_error(PubSub::MessageTypeUnknown)
+        # then, make sure `process` does not
+        subject.process
       end
     end
   end
