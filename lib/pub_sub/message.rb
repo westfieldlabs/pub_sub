@@ -14,7 +14,7 @@ module PubSub
       begin
         validate_message!
         handler.process(data)
-      rescue => e
+      rescue PubSub::ServiceUnknown, PubSub::MessageTypeUnknown => e
         PubSub.logger.error e.message
       end
     end

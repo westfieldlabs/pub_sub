@@ -90,4 +90,29 @@ RSpec.describe PubSub::Message do
       end
     end
   end
+
+
+  describe 'messages are NOT filtered out' do
+    let(:message) {
+      {
+        "uri" => "https://example.com/entity/11355",
+        "id" => 11355
+      }
+    }
+    class EntityUpdate
+    end
+
+    context 'on' do
+      let(:payload) { raw_sns_message['body'] }
+
+      it 'other errors' do
+        allow(PubSub.config.subscriptions).to receive(:[]).with(
+          'entity-service-prod'
+        ).and_return(nil)
+        allow(PubSub.config).to receive_message_chain("logger.error").and_return(anything())
+        expect(subject).to receive(:validate_message!).and_throw(:test_error)
+        expect{subject.process}.to raise_error(UncaughtThrowError)
+      end
+    end
+  end
 end
