@@ -13,18 +13,17 @@ module PubSub
     def process
       begin
         validate_message!
-      rescue PubSub::ServiceUnknown => e
-        return
+        handler.process(data)
+      rescue PubSub::ServiceUnknown, PubSub::MessageTypeUnknown => e
+        PubSub.logger.error e.message
       end
-      handler.process(data)
     end
 
     def validate_message!
       messages = PubSub.config.subscriptions[sender]
       if messages.nil? || messages.empty?
         warning = "#{PubSub.config.service_name} received a message from #{sender} but no matching subscription exists for that sender"
-        PubSub.logger.warn warning
-        raise PubSub::ServiceUnknown, warning
+        fail PubSub::ServiceUnknown, warning
       elsif !messages.include?(type)
         error = "#{PubSub.config.service_name} received a message from #{sender} but it was of unknown type #{type}"
         fail PubSub::MessageTypeUnknown, error
