@@ -1,3 +1,4 @@
+# This is a circuit breaker that fails over to a different region on errors
 module PubSub
 
   class Breaker
@@ -10,6 +11,7 @@ module PubSub
         current_breaker.run(&block)
       rescue CB2::BreakerOpen
         Breaker.use_next_breaker
+        # Sleep to stop wasting system resources in the case where _all_ regions are down.
         sleep 1
         retry
       end
@@ -37,6 +39,7 @@ module PubSub
         @breakers ||= all_regions.map do |region|
           CB2::Breaker.new(
           service: "aws-#{region}",
+          # TODO, make these values configurable
           duration: 60,
           threshold: 50,
           reenable_after: 60,

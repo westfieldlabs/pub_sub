@@ -30,6 +30,7 @@ namespace :pub_sub do
       PubSub.config.regions.each do |region|
         subs = Aws::SNS::Client.new(region: region).list_subscriptions.subscriptions
         subs.sort_by(&:endpoint).each do |subscription|
+          # TODO - it would be useful to know what kind of an endpoint this is - webhook, SQS, email, etc
           puts " - #{split_name(subscription.endpoint)} is listening to " \
                "#{split_name(subscription.topic_arn)} in #{region}"
         end

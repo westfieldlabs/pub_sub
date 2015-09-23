@@ -2,7 +2,7 @@ namespace :pub_sub do
   desc 'Poll the queue for updates'
   task poll: [:environment, :subscribe] do
     worker_concurrency.times.map do
-      sleep 5 # Allow things to load to avoid circular reference errors
+      sleep 5 # Allow things to load to avoid circular reference errors (loading classes ain't threadsafe)
       Thread.new { start_poll_thread }
     end.each(&:join)
   end
@@ -21,10 +21,14 @@ namespace :pub_sub do
     retry
   end
 
+  # FIXME - probably this should use standard logger debug levels
+  # IE, logger.debug('a debug message')
+  # logger.warn('a warning message')
   def verbose?
     ENV['VERBOSE'] == 'true'
   end
 
+  # How many threads to use for workers
   def worker_concurrency
     ENV.fetch('PUB_SUB_WORKER_CONCURRENCY', 2).to_i
   end
