@@ -42,14 +42,12 @@ module PubSub
     # queues. Using `development` would cause conflicts with other developers.
     def env_suffix
       if %w(development test).include?(rails_env)
-        # FIXME - this should probably be overridable with an ENV variable
         `whoami`.strip
       else
         rails_env
       end
     end
 
-    # FIXME - this should probably be renamed to just `env` or similar
     def rails_env
       return Rails.env if defined?(Rails)
       ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'development'

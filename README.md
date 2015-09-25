@@ -192,7 +192,9 @@ The subscriber will "region hop" periodically if it's queue is empty even in the
 
 ### Developing with pub_sub
 
-You must run `rake pub_sub:subscribe` once to register your personal version of the service with the queue, then you may run `rake pub_sub:poll` to start receiving messages from your own queues. The services suffix their `service_identifier` with a local identifier (your system username) so your development and test messages don't pollute the production or UAT services.
+Run `rake pub_sub:poll` to start receiving messages from your own queues. The services suffix their `service_identifier` with a local identifier (your system username) so your development and test messages don't pollute the production or UAT services.
+
+To see how the subscriptions look without necessarily sending events through them, you can `rake pub_sub:subscribe` once to register your personal version of the service's queues with the topics. This may be useful for understanding how messages will flow, in conjunction with `rake pub_sub:debug:subscriptions`.
 
 ### Message design and SQS constraints
 
