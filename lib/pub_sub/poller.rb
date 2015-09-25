@@ -4,6 +4,7 @@ module PubSub
       @verbose = verbose
     end
 
+    # Poll for messages across all regions
     def poll
       loop do
         Breaker.run do

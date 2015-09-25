@@ -38,10 +38,21 @@ PubSub.configure do |config|
   config.aws(
     key: 'mykey',
     secret: 'my_secret',
-    region: 'us-east-1' # Optional: us-east-1 is default
   )
 end
 ```
+### Logging
+If running under Rails, this will log to Rails.logger. In other environments, you can set the logger like `PubSub.config.logger = MyLogger` or similar.
+
+### Wiring up subscriptions
+To connect queues to topics, and put the above config file into practice, you should run `bundle exec rake pub_sub:subscribe`. Verify this has worked as expected by running `bundle exec rake pub_sub:debug:subscriptions`.
+Note that the subscribe task will be run automatically before the poll task, so it's probably not needed to run the subscribe task on production or staging. Checking that the subscriptions are correct after a deploy would be prudent, of course.
+
+### Subscriber workers
+You can set the number of worker threads for the subscribers with the ENV variable 'PUB_SUB_WORKER_CONCURRENCY'. By default it's two; testing with Standard 1X dynos on heroku suggests around 10-20 is reasonable, depending on the application.
+
+### Unsubscribing
+This functionality is not implemented yet.
 
 ### Receiving a message
 
@@ -95,7 +106,7 @@ end
 
 ### Combined Publisher / Receiver
 
-A service can publish & consume the same kind of message.
+A service can publish & consume the same kind of message. This can be used to offload heavy processing from the web tier, like resque or activejob.
 
 ```ruby
 # app/events/foo_update.rb
@@ -131,9 +142,11 @@ end
 
 The trade-off is that if a message fails to send for some reason, it won't fail the parent transaction and you won't be notified. For this reason `async` is off by default, but you can use it where it makes sense to.
 
+It is not recommended to use async functionality - it is deprecated and liekly to be removed soon. Instead, consider using futures from git@github.com:ruby-concurrency/concurrent-ruby.git .
+
 ```ruby
 # Example of using a message publisher with async
-FooUpdate.new(Foo.first).publish(async: true)
+FooUpdate.new(Foo.first).publish
 ```
 
 ### ActiveRecord integration
@@ -142,7 +155,7 @@ To automatically publish a message when its data changes, add the following to y
 
 ```ruby
 class Retailer < ActiveRecord::Base
-  publish_changes_with :retailer_update, async: true
+  publish_changes_with :retailer_update
 end
 ```
 
@@ -163,17 +176,25 @@ If hosting on Heroku your `Procfile` ought to include a line like
 worker: bundle exec rake pub_sub:poll
 ```
 
-Note you don't need any additional workers to publish, only to subscribe.
+Note you don't need this line to publish, only to subscribe.
 
 ### Errors
 
-There are two custom exceptions which may be raised during processing:
+There is a custom exception which may be raised during processing:
 
 * `PubSub::MessageTypeUnknown` will be raised if a message arrives from a configured service, but is *not* in the list of acceptable messages.
 
+### Region failover
+
+In case of problems in one AWS region, this gem will attempt to failover across regions. By default, the regions selected are us-east-1, then us-west-1, then eu-west-1, then ap-southeast-1. An assumption is made that if SNS is encountering problems in a region, it's probable that SQS will as well, so errors in a region from either service will contribute to the failover circuit breaking logic.
+
+The subscriber will "region hop" periodically if it's queue is empty even in the abscence of errors. This is because if an application doesn't publish, it will never know that SNS is having problems. By effectively receiving messages on _any_ region, we avoid this failure mode.
+
 ### Developing with pub_sub
 
-You must run `rake pub_sub:subscribe` once to register your personal version of the service with the queue, then you may run `rake pub_sub:poll` to start receiving messages from your own queues. The services suffix their `service_identifier` with a local identifier (your system username) so your development and test messages don't pollute the production or UAT services.
+Run `rake pub_sub:poll` to start receiving messages from your own queues. The services suffix their `service_identifier` with a local identifier (your system username) so your development and test messages don't pollute the production or UAT services.
+
+To see how the subscriptions look without necessarily sending events through them, you can `rake pub_sub:subscribe` once to register your personal version of the service's queues with the topics. This may be useful for understanding how messages will flow, in conjunction with `rake pub_sub:debug:subscriptions`.
 
 ### Message design and SQS constraints
 
@@ -181,6 +202,9 @@ Generally it's recommended to provide the absolute minimum of data in a publishe
 
 The main reason for this is that SQS guarantees that every message will be received at least once. And that's _it_. You cannot rely on the order of messages, or that the same message won't be delivered n times. By relying on an API call based on ID or provided URI, which shouldn't change, we can make sure that an application gets the canonical, most up-to-date data based on a message.
 
+It's possible to enforce ordering in application logic (eg, have a message counter that always increases, and compare counts to detect ordering issues and/or duplicates), but this gem does not implement such logic.
+
 ## Ruby Support
 
 * 2.2.1+
+* JRuby 9.0.0.0+

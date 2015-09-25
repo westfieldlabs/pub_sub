@@ -2,6 +2,7 @@ module PubSub
   class Message
     def initialize(payload)
       content = JSON.parse(payload)
+      # FIXME - this should no longer be necessary
       if content.is_a?(Hash) && content.has_key?('Message')
         # Handle the RawMessageDelivery attribute on the subscription being
         # set to false
@@ -37,14 +38,18 @@ module PubSub
       @payload['sender']
     end
 
+    # Type of message this is
     def type
       @payload['type']
     end
 
+    # Data contained the the payload
     def data
       @payload['data']
     end
 
+    # Guess the handler based on conventions
+    # Eg deal_update -> DealUpdate
     def handler
       type.camelize.constantize
     end

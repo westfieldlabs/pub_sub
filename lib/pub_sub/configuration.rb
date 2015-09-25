@@ -10,8 +10,10 @@ module PubSub
 
     def initialize
       @subscriptions = {}
-      @visibility_timeout = 3600 # 1 hour
-      @idle_timeout = 60
+      # How long to wait before retrying a failed message
+      @visibility_timeout = 3600 # seconds, 1 hour
+      # How long to wait before listening on another region
+      @idle_timeout = 60 # seconds
     end
 
     def service(service_name)
