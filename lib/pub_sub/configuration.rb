@@ -20,6 +20,11 @@ module PubSub
       @service_name = service_name.to_s
     end
 
+    # Subscribe to a specific sender for specific message types.
+    # The identifier generated from {service_name} is used for both
+    # the sender and the topic.
+    # If {service_identifier} is provided, then that's used instead
+    # of {service_name} for both topic and sender.
     def subscribe_to(service_name, messages: [], service_identifier: nil)
       service_identifier ||= PubSub.service_identifier(service_name)
       @subscriptions[service_identifier] = messages
