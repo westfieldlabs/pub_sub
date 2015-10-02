@@ -9,7 +9,8 @@ module PubSub
 
       def run(&block)
         current_breaker.run(&block)
-      rescue CB2::BreakerOpen
+      rescue CB2::BreakerOpen => e
+        PubSub.logger.warn e
         Breaker.use_next_breaker
         # Sleep to stop wasting system resources in the case where _all_ regions are down.
         sleep 1
