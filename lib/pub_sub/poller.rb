@@ -1,19 +1,12 @@
 module PubSub
   class Poller
-    def initialize(verbose = false)
-      @verbose = verbose
-    end
 
     # Poll for messages across all regions
     def poll
       loop do
         Breaker.run do
           poller.poll(config) do |message|
-            if @verbose
-              PubSub.logger.info(
-                "PubSub received: #{message.message_id} - #{message.body}"
-              )
-            end
+            PubSub.logger.debug "PubSub [#{PubSub.config.service_name}] received: #{message.body}"
             Message.new(message.body).process
           end
         end

@@ -1,17 +1,20 @@
 module PubSub
   class Message
+
     def initialize(payload)
-      content = JSON.parse(payload)
-      # FIXME - this should no longer be necessary
-      if content.is_a?(Hash) && content.has_key?('Message')
-        # Handle the RawMessageDelivery attribute on the subscription being
-        # set to false
-        content = JSON.parse(content['Message'])
+      payload_as_json = JSON.parse(payload)
+      @message_id = payload_as_json['MessageId']
+      if payload_as_json.is_a?(Hash) && payload_as_json.has_key?("Message")
+        # RawMessageDelivery=false
+        @payload = JSON.parse(payload_as_json['Message'])
+      else
+        # RawMessageDelivery=true
+        @payload = payload_as_json
       end
-      @payload = content
     end
 
     def process
+      PubSub.logger.debug "Processing message #{@message_id} with #{handler}"
       begin
         validate_message!
         handler.process(data)
@@ -51,7 +54,7 @@ module PubSub
     # Guess the handler based on conventions
     # Eg deal_update -> DealUpdate
     def handler
-      type.camelize.constantize
+      @handler ||= type.camelize.constantize
     end
   end
 end
