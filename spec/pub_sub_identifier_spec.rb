@@ -3,7 +3,7 @@ describe PubSub do
   before do
     PubSub.configure do |config|
       config.service 'test'
-      config.subscribe_to 'test', messages: ['example'], service_identifier: 'custom_identifier'
+      config.subscribe_to_custom 'custom_identifier', messages: ['example'], topic: 'test'
     end
   end
 
