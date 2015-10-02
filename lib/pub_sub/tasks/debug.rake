@@ -11,14 +11,16 @@ namespace :pub_sub do
 
     desc 'List information about PubSub queues.'
     task queues: :environment do
+      message_count_attrs = %w(ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible ApproximateNumberOfMessagesDelayed)
       puts 'Queues: ', '----------'
       PubSub.config.regions.each do |region|
         sqs = Aws::SQS::Client.new(region: region)
         sqs.list_queues.queue_urls.each do |url|
-          message_count = sqs.get_queue_attributes(
+          attributes = sqs.get_queue_attributes(
             queue_url: url,
-            attribute_names: ['ApproximateNumberOfMessages']
-          ).attributes['ApproximateNumberOfMessages']
+            attribute_names: message_count_attrs
+          )
+          message_count = message_count_attrs.map{|x| attributes.attributes[x].to_i}.sum
           puts " - #{split_name(url, '/')} with #{message_count} messages in #{region}"
         end
       end
@@ -30,9 +32,8 @@ namespace :pub_sub do
       PubSub.config.regions.each do |region|
         subs = Aws::SNS::Client.new(region: region).list_subscriptions.subscriptions
         subs.sort_by(&:endpoint).each do |subscription|
-          # TODO - it would be useful to know what kind of an endpoint this is - webhook, SQS, email, etc
           puts " - #{split_name(subscription.endpoint)} is listening to " \
-               "#{split_name(subscription.topic_arn)} in #{region}"
+               "#{split_name(subscription.topic_arn)} (#{subscription.protocol}) in #{region}"
         end
       end
     end
