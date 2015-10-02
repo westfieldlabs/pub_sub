@@ -26,8 +26,8 @@ module PubSub
       end
 
       def use_next_breaker
-        Thread.current[THREAD_LOCAL_IDENTIFIER] += 1
-        Thread.current[THREAD_LOCAL_IDENTIFIER] = Thread.current[THREAD_LOCAL_IDENTIFIER] % all_breakers.count
+        Thread.current[THREAD_LOCAL_IDENTIFIER] = (Thread.current[THREAD_LOCAL_IDENTIFIER] + 1) % all_breakers.count
+        PubSub.logger.info "#{PubSub.config.service_name} switched to #{current_breaker.inspect}"
       end
 
       private

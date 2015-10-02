@@ -2,6 +2,9 @@ require 'spec_helper'
 describe PubSub::Breaker do
 
   before do
+    %w(info debug error).each do |method|
+      allow(PubSub.config).to receive_message_chain("logger.#{method}").and_return(anything())
+    end
     @breakers = 4.times.map do |index|
       double("breaker#{index}")
     end
@@ -29,7 +32,7 @@ describe PubSub::Breaker do
   describe 'use next breaker' do
 
     it "should advance both regions and breakers" do
-      expect(PubSub::Breaker).to receive(:all_breakers).and_return @breakers
+      expect(PubSub::Breaker).to receive(:all_breakers).twice.and_return @breakers
       PubSub::Breaker.use_next_breaker
       expect(PubSub::Breaker.current_region).to eq('us-west-1')
       expect(PubSub::Breaker).to receive(:all_breakers).and_return @breakers
