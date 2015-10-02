@@ -7,7 +7,8 @@ module PubSub
     def subscribe
       PubSub.config.regions.each do |region|
         topics = PubSub.config.subscriptions.keys.map do |service_identifier|
-          subscribe_to_service(service_identifier, region)
+          topic = PubSub.config.topics[service_identifier]
+          subscribe_to_service(service_identifier, topic, region)
         end
         set_queue_policy(topics.map(&:arn), region)
       end
@@ -15,10 +16,10 @@ module PubSub
 
     private
 
-    def subscribe_to_service(service_identifier, region)
-      topic = Aws::SNS::Topic.new(sns(region).create_topic(name: service_identifier).topic_arn, region: region)
+    def subscribe_to_service(sender, topic_id, region)
+      topic = Aws::SNS::Topic.new(sns(region).create_topic(name: topic_id).topic_arn, region: region)
       topic.subscribe(endpoint: queue_arn(region), protocol: 'sqs')
-      PubSub.logger.info "Subscribed #{queue_arn(region)} to #{topic.arn}"
+      PubSub.logger.info "Subscribed #{queue_arn(region)} to #{topic.arn} for sender #{sender}"
       topic
     end
 
