@@ -19,6 +19,12 @@ RSpec.describe PubSub::Message do
   }
   subject { described_class.new(payload) }
 
+  before do
+    %w(info debug error).each do |method|
+      allow(PubSub.config).to receive_message_chain("logger.#{method}").and_return(anything())
+    end
+  end
+
   describe '#process' do
     let(:message) {
       {
@@ -51,7 +57,7 @@ RSpec.describe PubSub::Message do
         end
       end
     end
-    
+
     context "message is not valid" do
 
       context 'with unknown sender' do

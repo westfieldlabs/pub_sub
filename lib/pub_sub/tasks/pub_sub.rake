@@ -13,19 +13,12 @@ namespace :pub_sub do
   end
 
   def start_poll_thread
-    PubSub::Poller.new(verbose?).poll
+    PubSub::Poller.new.poll
   rescue => e
     NewRelic::Agent.notice_error(e) if defined?(NewRelic)
     PubSub.logger.error("Unknown error polling subscriptions: #{e.inspect}")
     PubSub.logger.error(e.backtrace)
     retry
-  end
-
-  # FIXME - probably this should use standard logger debug levels
-  # IE, logger.debug('a debug message')
-  # logger.warn('a warning message')
-  def verbose?
-    ENV['VERBOSE'] == 'true'
   end
 
   # How many threads to use for workers

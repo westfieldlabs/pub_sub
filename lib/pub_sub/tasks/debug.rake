@@ -2,11 +2,11 @@ namespace :pub_sub do
   namespace :debug do
     desc 'List all PubSub debugging information.'
     task all: :environment do
-      Rake::Task['pub_sub:debug:subscriptions'].invoke
-      puts
       Rake::Task['pub_sub:debug:topics'].invoke
       puts
       Rake::Task['pub_sub:debug:queues'].invoke
+      puts
+      Rake::Task['pub_sub:debug:subscriptions'].invoke
     end
 
     desc 'List information about PubSub queues.'

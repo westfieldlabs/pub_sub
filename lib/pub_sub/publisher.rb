@@ -11,19 +11,19 @@ module PubSub
 
       def publish_asynchronously(message)
         Thread.new do
-          message_id = publish_synchronously(message)
-          PubSub.logger.info(
-            "Message published asynchronously: #{message_id}"
-          )
+          publish_synchronously(message)
         end
       end
 
       def publish_synchronously(message)
         Breaker.run do
-          sns.publish(
-            topic_arn: topic_arn,
+          _topic_arn = topic_arn
+          result = sns.publish(
+            topic_arn: _topic_arn,
             message: message
           ).message_id
+          PubSub.logger.debug "PubSub [#{PubSub.config.service_name}] published to #{_topic_arn} message #{result}"
+          result
         end
       end
 
