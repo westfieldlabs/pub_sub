@@ -14,9 +14,9 @@ module PubSub
     end
 
     def process
-      PubSub.logger.debug "Processing message #{@message_id} with #{handler}"
       begin
         validate_message!
+        PubSub.logger.debug "Processing message #{@message_id} with #{handler}"
         handler.process(data)
       rescue PubSub::ServiceUnknown, PubSub::MessageTypeUnknown => e
         PubSub.logger.error e.message
