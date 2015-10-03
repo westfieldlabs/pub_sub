@@ -26,10 +26,10 @@ module PubSub
     def validate_message!
       messages = PubSub.config.subscriptions[sender]
       if messages.nil? || messages.empty?
-        warning = "#{PubSub.config.service_name} received a message from #{sender} but no matching subscription exists for that sender"
+        warning = "#{PubSub.config.service_name} received a message from #{sender} but no matching subscription exists for that sender. Available senders are: #{PubSub.config.subscriptions.keys}"
         fail PubSub::ServiceUnknown, warning
       elsif !messages.include?(type)
-        error = "#{PubSub.config.service_name} received a message from #{sender} but it was of unknown type #{type}"
+        error = "#{PubSub.config.service_name} received a message from #{sender} but it was of unknown type #{type}. Available types are: #{messages}"
         fail PubSub::MessageTypeUnknown, error
       end
     end
