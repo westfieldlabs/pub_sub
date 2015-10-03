@@ -7,7 +7,13 @@ module PubSub
         Breaker.run do
           poller.poll(config) do |message|
             PubSub.logger.debug "PubSub [#{PubSub.config.service_name}] received: #{message.body}"
-            Message.new(message.body).process
+            begin
+              Message.new(message.body).process
+            rescue Exception => e
+              # Log the exception or else it will be suppressed by the breaker pattern
+              PubSub.logger.warn e
+              raise
+            end
           end
         end
         Breaker.use_next_breaker
