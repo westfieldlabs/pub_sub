@@ -8,7 +8,14 @@ module PubSub
     class << self
 
       def run(&block)
-        current_breaker.run(&block)
+        current_breaker.run do
+          begin
+            block.call
+          rescue Exception => e
+            PubSub.logger.warn e
+            raise # will be caught by the breaker
+          end
+        end
       rescue CB2::BreakerOpen => e
         PubSub.logger.warn e
         Breaker.use_next_breaker
