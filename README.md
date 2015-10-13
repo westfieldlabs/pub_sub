@@ -38,11 +38,13 @@ PubSub.configure do |config|
   config.aws(
     key: 'mykey',
     secret: 'my_secret',
+    regions: ['us-east-1', 'us-west-1']
   )
 end
 ```
-If you use standard AWS environment variables (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`), then you do not need to specify them explicitly - just call `config.aws` (with no parameters).
+If you use standard AWS environment variables (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`), then you do not need to specify them here.
 
+Similarly, if you want to subscribe in all available regions, then omit the `regions` parameter as well.
 
 ### Logging
 If running under Rails, this will log to Rails.logger. In other environments, you can set the logger like `PubSub.config.logger = MyLogger` or similar.
