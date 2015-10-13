@@ -41,6 +41,9 @@ PubSub.configure do |config|
   )
 end
 ```
+If you use standard AWS environment variables (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`), then you do not need to specify them explicitly - just call `config.aws` (with no parameters).
+
+
 ### Logging
 If running under Rails, this will log to Rails.logger. In other environments, you can set the logger like `PubSub.config.logger = MyLogger` or similar.
 
