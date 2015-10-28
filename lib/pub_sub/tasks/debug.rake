@@ -31,14 +31,8 @@ namespace :pub_sub do
       puts 'Subscriptions: ', '----------'
       puts "SERVICE\tSUBSCRIPTION\tPROTOCOL\tREGION"
       PubSub.config.regions.each do |region|
-        subs = []
-        next_token = ""
-        while true
-          response = Aws::SNS::Client.new(region: region).list_subscriptions(next_token: next_token)
-          subs += response.subscriptions
-          next_token = response.next_token
-          break if next_token.to_s == ""
-        end
+        client = Aws::SNS::Client.new(region: region)
+        subs = collect_all(client, :subscriptions)
         subs.sort_by(&:endpoint).each do |subscription|
           puts [split_name(subscription.endpoint), split_name(subscription.topic_arn), subscription.protocol, region].join("\t")
         end
@@ -49,14 +43,30 @@ namespace :pub_sub do
     task topics: :environment do
       puts 'Topics: ', '----------'
       PubSub.config.regions.each do |region|
-        Aws::SNS::Client.new(region: region).list_topics.topics.each do |topic|
+        client = Aws::SNS::Client.new(region: region)
+        topics = collect_all(client, :topics)
+        topics.each do |topic|
           puts " - #{split_name(topic.topic_arn)} in #{region}"
         end
       end
     end
   end
 
+
   def split_name(string, delimiter = ':')
     string.to_s.split(delimiter).last
   end
+
+  def collect_all(client, collection_type)
+    elements = []
+    next_token = ""
+    loop do
+      response = client.send("list_#{collection_type}".to_sym, next_token: next_token)
+      elements.concat response.send(collection_type.to_sym)
+      next_token = response.next_token
+      break if next_token.to_s == ""
+    end
+    elements
+  end
+
 end
