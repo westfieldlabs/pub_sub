@@ -29,11 +29,18 @@ namespace :pub_sub do
     desc 'List information about the queue subscriptions.'
     task subscriptions: :environment do
       puts 'Subscriptions: ', '----------'
+      puts "SERVICE\tSUBSCRIPTION\tPROTOCOL\tREGION"
       PubSub.config.regions.each do |region|
-        subs = Aws::SNS::Client.new(region: region).list_subscriptions.subscriptions
+        subs = []
+        next_token = ""
+        while true
+          response = Aws::SNS::Client.new(region: region).list_subscriptions(next_token: next_token)
+          subs += response.subscriptions
+          next_token = response.next_token
+          break if next_token.to_s == ""
+        end
         subs.sort_by(&:endpoint).each do |subscription|
-          puts " - #{split_name(subscription.endpoint)} is listening to " \
-               "#{split_name(subscription.topic_arn)} (#{subscription.protocol}) in #{region}"
+          puts [split_name(subscription.endpoint), split_name(subscription.topic_arn), subscription.protocol, region].join("\t")
         end
       end
     end
