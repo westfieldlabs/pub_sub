@@ -18,6 +18,7 @@ describe PubSub::Poller do
     %w(info debug error warn).each do |method|
       allow(PubSub).to receive_message_chain("logger.#{method}").and_return(anything())
     end
+    allow_any_instance_of(PubSub::Queue).to receive(:queue_url) { nil }
     PubSub.configure do |config|
       config.service 'test'
       config.subscribe_to 'test', messages: ['example_update']
