@@ -1,3 +1,5 @@
+require 'faraday'
+
 module PubSub
   class Poller
 
@@ -7,7 +9,12 @@ module PubSub
         Breaker.run do
           poller.poll(config) do |message|
             PubSub.logger.debug "PubSub [#{PubSub.config.service_name}] received: #{message.body}"
-            Message.new(message.body).process
+            begin
+              Message.new(message.body).process
+            rescue Faraday::TimeoutError => e
+              PubSub.logger.warn "#{e.message}\nMessage #{message.inspect} will be retried later"
+              throw :skip_delete
+            end
           end
         end
         Breaker.use_next_breaker
