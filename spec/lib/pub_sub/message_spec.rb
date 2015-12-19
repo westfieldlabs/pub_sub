@@ -20,7 +20,7 @@ RSpec.describe PubSub::Message do
   subject { described_class.new(payload) }
 
   before do
-    %w(info debug error).each do |method|
+    %w(info debug error warn).each do |method|
       allow(PubSub.config).to receive_message_chain("logger.#{method}").and_return(anything())
     end
   end
@@ -67,7 +67,6 @@ RSpec.describe PubSub::Message do
           allow(PubSub.config.subscriptions).to receive(:[]).with(
             'entity-service-prod'
           ).and_return(nil)
-          allow(PubSub.config).to receive_message_chain("logger.error").and_return(anything())
           # first, make sure the validator throws an exception
           expect{subject.validate_message!}.to raise_error(PubSub::ServiceUnknown)
           # then, make sure `process` does not
@@ -82,7 +81,6 @@ RSpec.describe PubSub::Message do
           allow(PubSub.config.subscriptions).to receive(:[]).with(
             'entity-service-prod'
           ).and_return(['unknown_type'])
-          allow(PubSub.config).to receive_message_chain("logger.error").and_return(anything())
           # first, make sure the validator throws an exception
           expect{subject.validate_message!}.to raise_error(PubSub::MessageTypeUnknown)
           # then, make sure `process` does not
@@ -98,7 +96,6 @@ RSpec.describe PubSub::Message do
         allow(PubSub.config.subscriptions).to receive(:[]).with(
           'entity-service-prod'
         ).and_return(nil)
-        allow(PubSub.config).to receive_message_chain("logger.error").and_return(anything())
         expect(subject).to receive(:validate_message!).and_throw(:test_error)
         expect{subject.process}.to raise_error(UncaughtThrowError)
       end

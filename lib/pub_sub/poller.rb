@@ -1,3 +1,5 @@
+require 'faraday'
+
 module PubSub
   class Poller
 
@@ -10,7 +12,7 @@ module PubSub
             begin
               Message.new(message.body).process
             rescue Faraday::TimeoutError => e
-              Rails.logger.warn e.message
+              PubSub.logger.warn "#{e.message}\nMessage #{message.inspect} will be retried later"
               throw :skip_delete
             end
           end

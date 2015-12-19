@@ -18,7 +18,7 @@ describe PubSub do
                 })
     end
 
-    describe 'message data' do
+    describe '#message_data' do
       it 'should return the correct json' do
         expect(publisher.message_data).to eql(name: 'example message')
       end
