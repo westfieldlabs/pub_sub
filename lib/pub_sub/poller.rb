@@ -8,11 +8,11 @@ module PubSub
       loop do
         Breaker.run do
           poller.poll(config) do |message|
-            PubSub.logger.debug "PubSub [#{PubSub.config.service_name}] received: #{message.body}"
+            PubSub.logger.debug "PubSub [#{PubSub.config.service_name}, #{queue_url}] received: #{message.body}"
             begin
               Message.new(message.body).process
             rescue Faraday::TimeoutError => e
-              PubSub.logger.warn "#{e.message}\nMessage #{message.inspect} will be retried later"
+              PubSub.logger.warn "#{e.message}. Message #{message.inspect} will be retried later"
               throw :skip_delete
             end
           end
@@ -29,9 +29,13 @@ module PubSub
         idle_timeout: PubSub.config.idle_timeout,
       }
     end
+    
+    def queue_url
+      PubSub::Queue.new.queue_url
+    end
 
     def poller
-      Aws::SQS::QueuePoller.new(PubSub::Queue.new.queue_url, client: client)
+      Aws::SQS::QueuePoller.new(queue_url, client: client)
     end
 
     def client
