@@ -1,7 +1,7 @@
 module PubSub
   module MessagePublisher
-    def publish(async: false)
-      Publisher.publish(message_json, async: async)
+    def publish(async: false, custom_topic: PubSub.service_identifier)
+      Publisher.publish(message_json, async: async, custom_topic: custom_topic)
     end
 
     def message_type
