@@ -66,5 +66,19 @@ module PubSub
     def queue_url(region)
       sqs(region).create_queue(queue_name: PubSub.service_identifier).queue_url
     end
+
+    # Collects all :topics or :subscriptions for a given SNS client
+    def self.collect_all(client, collection_type)
+      elements = []
+      next_token = ""
+      loop do
+        response = client.send("list_#{collection_type}".to_sym, next_token: next_token)
+        elements.concat response.send(collection_type.to_sym)
+        next_token = response.next_token
+        break if next_token.to_s == ""
+      end
+      elements
+    end
+
   end
 end
