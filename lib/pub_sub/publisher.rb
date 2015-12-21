@@ -27,10 +27,6 @@ module PubSub
         end
       end
 
-      def topic_name
-        PubSub.service_identifier
-      end
-
       private
 
       def sns
