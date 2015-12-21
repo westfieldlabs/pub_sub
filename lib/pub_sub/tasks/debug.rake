@@ -1,52 +1,65 @@
 namespace :pub_sub do
   namespace :debug do
     desc 'List all PubSub debugging information.'
-    task all: :environment do
-      Rake::Task['pub_sub:debug:topics'].invoke
+    task :all, [:filter,:region] => :environment do |t, args|
+      args.with_defaults(filter: "", region: "")
+      task('pub_sub:debug:topics').invoke(args[:filter], args[:region])
       puts
-      Rake::Task['pub_sub:debug:queues'].invoke
+      task('pub_sub:debug:queues').invoke(args[:filter], args[:region])
       puts
-      Rake::Task['pub_sub:debug:subscriptions'].invoke
+      task('pub_sub:debug:subscriptions').invoke(args[:filter], args[:region])
+    end
+
+    desc 'List information about the topics.'
+    task :topics, [:filter,:region] => :environment do |t, args|
+      args.with_defaults(filter: nil, region: nil)
+      puts 'Topics: ', '----------'
+      PubSub.config.regions.each do |region|
+        next if !args[:region].blank? && region != args[:region]
+        client = Aws::SNS::Client.new(region: region)
+        topics = collect_all(client, :topics)
+        topics.select!{|t| t.topic_arn =~ Regexp.new(args[:filter])} unless args[:filter].blank?
+        topics.each do |topic|
+          puts " - #{topic.topic_arn}"
+          topic = Aws::SNS::Topic.new(topic.topic_arn, region: region)
+          topic.subscriptions.each do |subscription|
+            puts "\t -> #{subscription.arn}"
+          end
+        end
+      end
     end
 
     desc 'List information about PubSub queues.'
-    task queues: :environment do
+    task :queues, [:filter,:region] => :environment do |t, args|
+      args.with_defaults(filter: nil, region: nil)
       message_count_attrs = %w(ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible ApproximateNumberOfMessagesDelayed)
       puts 'Queues: ', '----------'
       PubSub.config.regions.each do |region|
+        next if !args[:region].blank? && region != args[:region]
         sqs = Aws::SQS::Client.new(region: region)
         sqs.list_queues.queue_urls.each do |url|
+          next unless url =~ Regexp.new(args[:filter]) || args[:filter].blank?
           attributes = sqs.get_queue_attributes(
             queue_url: url,
             attribute_names: message_count_attrs
           )
           message_count = message_count_attrs.map{|x| attributes.attributes[x].to_i}.sum
-          puts " - #{split_name(url, '/')} with #{message_count} messages in #{region}"
+          puts " - #{message_count} messages in #{url}"
         end
       end
     end
 
     desc 'List information about the queue subscriptions.'
-    task subscriptions: :environment do
+    task :subscriptions, [:filter,:region] => :environment do |t, args|
+      args.with_defaults(filter: nil, region: nil)
       puts 'Subscriptions: ', '----------'
-      puts "SERVICE\tSUBSCRIPTION\tPROTOCOL\tREGION"
       PubSub.config.regions.each do |region|
+        next if !args[:region].blank? && region != args[:region]
         client = Aws::SNS::Client.new(region: region)
         subs = collect_all(client, :subscriptions)
+        subs.select!{|s| s.endpoint =~ Regexp.new(args[:filter])} unless args[:filter].blank?
         subs.sort_by(&:endpoint).each do |subscription|
-          puts [split_name(subscription.endpoint), split_name(subscription.topic_arn), subscription.protocol, region].join("\t")
-        end
-      end
-    end
-
-    desc 'List information about the topics.'
-    task topics: :environment do
-      puts 'Topics: ', '----------'
-      PubSub.config.regions.each do |region|
-        client = Aws::SNS::Client.new(region: region)
-        topics = collect_all(client, :topics)
-        topics.each do |topic|
-          puts " - #{split_name(topic.topic_arn)} in #{region}"
+          puts "[#{split_name(subscription.subscription_arn)}]\t#{subscription.endpoint} is listening to #{subscription.topic_arn}"
         end
       end
     end
