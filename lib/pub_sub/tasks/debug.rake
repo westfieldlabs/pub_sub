@@ -15,13 +15,13 @@ namespace :pub_sub do
       args.with_defaults(filter: nil, region: nil)
       puts 'Topics: ', '----------'
       PubSub.config.regions.each do |region|
-        next if !args[:region].blank? && region != args[:region]
+        next if args[:region].present? && region != args[:region]
         client = Aws::SNS::Client.new(region: region)
-        topics = collect_all(client, :topics)
-        topics.select!{|t| t.topic_arn =~ Regexp.new(args[:filter])} unless args[:filter].blank?
+        topics = PubSub::Subscriber.collect_all(client, :topics)
+        topics.select!{|t| t.topic_arn =~ Regexp.new(args[:filter])} if args[:filter].present?
         topics.each do |topic|
           puts " - #{topic.topic_arn}"
-          topic = Aws::SNS::Topic.new(topic.topic_arn, region: region)
+          topic = Aws::SNS::Topic.new(topic.topic_arn, client: client)
           topic.subscriptions.each do |subscription|
             puts "\t -> #{subscription.arn}"
           end
@@ -35,7 +35,7 @@ namespace :pub_sub do
       message_count_attrs = %w(ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible ApproximateNumberOfMessagesDelayed)
       puts 'Queues: ', '----------'
       PubSub.config.regions.each do |region|
-        next if !args[:region].blank? && region != args[:region]
+        next if args[:region].present? && region != args[:region]
         sqs = Aws::SQS::Client.new(region: region)
         sqs.list_queues.queue_urls.each do |url|
           next unless url =~ Regexp.new(args[:filter]) || args[:filter].blank?
@@ -54,10 +54,10 @@ namespace :pub_sub do
       args.with_defaults(filter: nil, region: nil)
       puts 'Subscriptions: ', '----------'
       PubSub.config.regions.each do |region|
-        next if !args[:region].blank? && region != args[:region]
+        next if args[:region].present? && region != args[:region]
         client = Aws::SNS::Client.new(region: region)
-        subs = collect_all(client, :subscriptions)
-        subs.select!{|s| s.endpoint =~ Regexp.new(args[:filter])} unless args[:filter].blank?
+        subs = PubSub::Subscriber.collect_all(client, :subscriptions)
+        subs.select!{|s| s.endpoint =~ Regexp.new(args[:filter])} if args[:filter].present?
         subs.sort_by(&:endpoint).each do |subscription|
           puts "[#{split_name(subscription.subscription_arn)}]\t#{subscription.endpoint} is listening to #{subscription.topic_arn}"
         end
@@ -68,18 +68,6 @@ namespace :pub_sub do
 
   def split_name(string, delimiter = ':')
     string.to_s.split(delimiter).last
-  end
-
-  def collect_all(client, collection_type)
-    elements = []
-    next_token = ""
-    loop do
-      response = client.send("list_#{collection_type}".to_sym, next_token: next_token)
-      elements.concat response.send(collection_type.to_sym)
-      next_token = response.next_token
-      break if next_token.to_s == ""
-    end
-    elements
   end
 
 end
