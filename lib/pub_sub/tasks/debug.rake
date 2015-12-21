@@ -15,10 +15,10 @@ namespace :pub_sub do
       args.with_defaults(filter: nil, region: nil)
       puts 'Topics: ', '----------'
       PubSub.config.regions.each do |region|
-        next if !args[:region].blank? && region != args[:region]
+        next if args[:region].present? && region != args[:region]
         client = Aws::SNS::Client.new(region: region)
         topics = PubSub::Subscriber.collect_all(client, :topics)
-        topics.select!{|t| t.topic_arn =~ Regexp.new(args[:filter])} unless args[:filter].blank?
+        topics.select!{|t| t.topic_arn =~ Regexp.new(args[:filter])} if args[:filter].present?
         topics.each do |topic|
           puts " - #{topic.topic_arn}"
           topic = Aws::SNS::Topic.new(topic.topic_arn, client: client)
@@ -35,7 +35,7 @@ namespace :pub_sub do
       message_count_attrs = %w(ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible ApproximateNumberOfMessagesDelayed)
       puts 'Queues: ', '----------'
       PubSub.config.regions.each do |region|
-        next if !args[:region].blank? && region != args[:region]
+        next if args[:region].present? && region != args[:region]
         sqs = Aws::SQS::Client.new(region: region)
         sqs.list_queues.queue_urls.each do |url|
           next unless url =~ Regexp.new(args[:filter]) || args[:filter].blank?
@@ -54,10 +54,10 @@ namespace :pub_sub do
       args.with_defaults(filter: nil, region: nil)
       puts 'Subscriptions: ', '----------'
       PubSub.config.regions.each do |region|
-        next if !args[:region].blank? && region != args[:region]
+        next if args[:region].present? && region != args[:region]
         client = Aws::SNS::Client.new(region: region)
         subs = PubSub::Subscriber.collect_all(client, :subscriptions)
-        subs.select!{|s| s.endpoint =~ Regexp.new(args[:filter])} unless args[:filter].blank?
+        subs.select!{|s| s.endpoint =~ Regexp.new(args[:filter])} if args[:filter].present?
         subs.sort_by(&:endpoint).each do |subscription|
           puts "[#{split_name(subscription.subscription_arn)}]\t#{subscription.endpoint} is listening to #{subscription.topic_arn}"
         end
