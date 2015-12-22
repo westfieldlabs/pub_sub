@@ -53,7 +53,7 @@ namespace :pub_sub do
         else
           puts "\nThe following subscriptions are invalid (run 'rake pub_sub:cleanup:subscriptions[false]' to delete them for real):"
           unrecognized_subs.each do |subscription|
-            puts subscription.subscription_arn
+            puts "#{subscription.subscription_arn} -> #{subscription.endpoint}"
           end
         end
       end
