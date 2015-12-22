@@ -27,7 +27,7 @@ namespace :pub_sub do
             false
           end
         end
-        allowed_subs = PubSub.config.subscriptions.keys
+        allowed_subs = PubSub.config.topics.values
         unrecognized_subs += current_subs.select do |subscription|
           short_topic_name = subscription.topic_arn.split(/:/).last
           is_allowed = allowed_subs.include? short_topic_name
