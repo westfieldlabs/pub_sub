@@ -57,7 +57,7 @@ namespace :pub_sub do
         next if args[:region].present? && region != args[:region]
         client = Aws::SNS::Client.new(region: region)
         subs = PubSub::Subscriber.collect_all(client, :subscriptions)
-        subs.select!{|s| s.endpoint =~ Regexp.new(args[:filter] || s.topic_arn =~ Regexp.new(args[:filter])} if args[:filter].present?
+        subs.select!{|s| s.endpoint =~ Regexp.new(args[:filter]) || s.topic_arn =~ Regexp.new(args[:filter])} if args[:filter].present?
         subs.sort_by(&:endpoint).each do |subscription|
           puts "[#{split_name(subscription.subscription_arn)}]\t#{subscription.endpoint} is listening to #{subscription.topic_arn}"
         end
