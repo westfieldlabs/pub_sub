@@ -12,56 +12,6 @@ namespace :pub_sub do
     PubSub::Subscriber.subscribe
   end
 
-  desc "Removes abandoned subscriptions (for this service only)"
-  task :cleanup, [:dry_run] => :environment do |t, args|
-    args.with_defaults(dry_run: true)
-    puts "Filtering by '#{PubSub.service_identifier}'"
-    unrecognized_subs = []
-    PubSub.config.regions.each do |region|
-      client = Aws::SNS::Client.new(region: region)
-      current_subs = PubSub::Subscriber.collect_all(client, :subscriptions)
-      # Ignore unrelated subscriptions
-      current_subs.select! do |subscription|
-        short_endpoint_name = subscription.endpoint.split(/:/).last
-        if PubSub.service_identifier == short_endpoint_name
-          true
-        else
-          puts "#{subscription.subscription_arn} is unrelated".light_black
-          false
-        end
-      end
-      allowed_subs = PubSub.config.subscriptions.keys
-      unrecognized_subs += current_subs.select do |subscription|
-        short_topic_name = subscription.topic_arn.split(/:/).last
-        is_allowed = allowed_subs.include? short_topic_name
-        if is_allowed
-          puts "#{subscription.subscription_arn} -> #{subscription.endpoint} is allowed".green
-        else
-          puts "#{subscription.subscription_arn} -> #{subscription.endpoint} is unrecognized".red
-        end
-        !is_allowed
-      end
-      if args[:dry_run] =~ /false/i
-        unrecognized_subs.each do |subscription|
-          sub = Aws::SNS::Subscription.new(subscription.subscription_arn, client: client)
-          puts "Deleting #{subscription.subscription_arn}".yellow
-          sub.delete
-        end
-      end
-    end
-
-    unless args[:dry_run] =~ /false/i
-      if unrecognized_subs.empty?
-        puts "All current subscriptions are correct."
-      else
-        puts "\nThe following subscriptions are invalid (run 'rake pub_sub:cleanup[false]' to delete them for real):"
-        unrecognized_subs.each do |subscription|
-          puts subscription.subscription_arn
-        end
-      end
-    end
-  end
-
   def start_poll_thread
     PubSub::Poller.new.poll
   rescue => e
