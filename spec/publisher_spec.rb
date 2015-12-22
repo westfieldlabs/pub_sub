@@ -29,17 +29,17 @@ describe PubSub::Publisher do
 
   describe '#publish' do
     it 'should publish syncronously by default' do
-      expect(PubSub::Publisher).to receive(:publish).with(message, async: false, custom_topic: PubSub.service_identifier)
+      expect(PubSub::Publisher).to receive(:publish).with(message, async: false, topic: PubSub.service_identifier)
       publisher.publish
     end
 
     it 'should publish syncronously' do
-      expect(PubSub::Publisher).to receive(:publish).with(message, async: false, custom_topic: PubSub.service_identifier)
+      expect(PubSub::Publisher).to receive(:publish).with(message, async: false, topic: PubSub.service_identifier)
       publisher.publish(async: false)
     end
 
     it 'should publish asyncronously' do
-      expect(PubSub::Publisher).to receive(:publish).with(message, async: true, custom_topic: PubSub.service_identifier)
+      expect(PubSub::Publisher).to receive(:publish).with(message, async: true, topic: PubSub.service_identifier)
       publisher.publish(async: true)
     end
   end
@@ -61,7 +61,7 @@ describe PubSub::Publisher do
       end
       expect_any_instance_of(Aws::SNS::Client).to receive(:publish) { publish_result }
       expect(PubSub::Publisher).to receive(:topic_arn).with(:test)
-      CustomUpdate.new.publish(async: false, custom_topic: :test)
+      CustomUpdate.new.publish(async: false, topic: :test)
     end
   end
 end
