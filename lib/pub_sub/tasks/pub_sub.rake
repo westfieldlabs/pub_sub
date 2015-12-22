@@ -2,7 +2,7 @@ namespace :pub_sub do
   desc 'Poll the queue for updates'
   task poll: [:environment, :subscribe] do
     worker_concurrency.times.map do |idx|
-      sleep idx*5 # Allow things to load to avoid circular reference errors (loading classes ain't threadsafe)
+      sleep idx*10 # Allow things to load to avoid circular reference errors (loading classes ain't threadsafe)
       Thread.new { start_poll_thread }
     end.each(&:join)
   end
