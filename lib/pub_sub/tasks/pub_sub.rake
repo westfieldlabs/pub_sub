@@ -4,7 +4,7 @@ namespace :pub_sub do
     worker_concurrency.times.map do |idx|
       # Give each thread some time to load to avoid circular reference errors (class-loading is not threadsafe)
       # [FIXME] ^ (written by a previous developer) likely refers to Breaker, though I still am not convinced there is a race condition.
-      sleep idx*10
+      sleep idx*5
       Thread.new { start_poll_thread }
     end.each(&:join)
   end
