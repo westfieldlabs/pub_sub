@@ -38,7 +38,7 @@ namespace :pub_sub do
         next if args[:region].present? && region != args[:region]
         sqs = Aws::SQS::Client.new(region: region)
         sqs.list_queues.queue_urls.each do |url|
-          next unless url =~ Regexp.new(args[:filter]) || args[:filter].blank?
+          next unless args[:filter].blank? || url =~ Regexp.new(args[:filter])
           attributes = sqs.get_queue_attributes(
             queue_url: url,
             attribute_names: message_count_attrs
