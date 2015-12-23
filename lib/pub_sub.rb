@@ -6,6 +6,7 @@ require 'redis'
 require 'pub_sub/version'
 require 'pub_sub/errors'
 require 'pub_sub/railtie' if defined?(Rails)
+require 'colorize'
 
 module PubSub
   autoload :Configuration,    'pub_sub/configuration'
