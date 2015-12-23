@@ -6,8 +6,8 @@ require 'pub_sub/version'
 Gem::Specification.new do |spec|
   spec.name          = 'pub_sub'
   spec.version       = PubSub::VERSION
-  spec.authors       = ['Chris Nelson']
-  spec.email         = ['cnelson@au.westfield.com']
+  spec.authors       = ['Chris Nelson', 'Eugene Mirkin']
+  spec.email         = ['cnelson@au.westfield.com', 'emirkin@us.westfield.com']
 
   if spec.respond_to?(:metadata)
     spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com' to prevent pushes to rubygems.org, or delete to allow pushes to any server."
@@ -26,6 +26,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'cb2', '~> 0.0.3'
   spec.add_dependency 'redis', '~> 3.2'
   spec.add_dependency 'faraday'
+  spec.add_dependency 'colorize'
 
   spec.add_development_dependency 'bundler', '~> 1.8'
   spec.add_development_dependency 'rake', '~> 10.0'
