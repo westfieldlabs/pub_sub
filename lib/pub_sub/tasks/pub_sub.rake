@@ -18,8 +18,7 @@ namespace :pub_sub do
     PubSub::Poller.new.poll
   rescue => e
     NewRelic::Agent.notice_error(e) if defined?(NewRelic)
-    PubSub.logger.error("Unknown error polling subscriptions: #{e.inspect}")
-    PubSub.logger.error(e.backtrace)
+    PubSub.logger.error("Unknown error polling subscriptions: #{e.inspect}\n#{e.backtrace}")
     retry
   end
 

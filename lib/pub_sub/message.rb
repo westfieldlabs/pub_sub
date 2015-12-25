@@ -2,14 +2,19 @@ module PubSub
   class Message
 
     def initialize(payload)
-      payload_as_json = JSON.parse(payload)
-      @message_id = payload_as_json['MessageId']
-      if payload_as_json.is_a?(Hash) && payload_as_json.has_key?("Message")
-        # RawMessageDelivery=false
-        @payload = JSON.parse(payload_as_json['Message'])
-      else
-        # RawMessageDelivery=true
-        @payload = payload_as_json
+      begin
+        payload_as_json = JSON.parse(payload)
+        @message_id = payload_as_json['MessageId']
+        if payload_as_json.is_a?(Hash) && payload_as_json.has_key?("Message")
+          # RawMessageDelivery=false
+          @payload = JSON.parse(payload_as_json['Message'])
+        else
+          # RawMessageDelivery=true
+          @payload = payload_as_json
+        end
+      rescue => e
+        PubSub.logger.error "#{e.message}. Payload: #{payload.inspect}"
+        raise
       end
     end
 
