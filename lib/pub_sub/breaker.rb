@@ -13,6 +13,7 @@ module PubSub
             block.call
           rescue Exception => e
             PubSub.logger.warn e
+            NewRelic::Agent.notice_error(e) if defined?(NewRelic)
             raise # will be caught by the breaker
           end
         end
