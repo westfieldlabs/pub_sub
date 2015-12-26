@@ -17,7 +17,7 @@ module PubSub
             end
           end
         end
-        Breaker.use_next_breaker # TODO: What is this here for? Doesn't Breaker.run already loop?
+        Breaker.use_next_breaker
       end
     end
 

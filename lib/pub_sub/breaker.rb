@@ -18,10 +18,10 @@ module PubSub
           end
         end
       rescue CB2::BreakerOpen => e
-        PubSub.logger.warn e
+        PubSub.logger.warn "#{current_breaker.inspect} is open. #{e.message}"
         Breaker.use_next_breaker
         # Sleep to stop wasting system resources in the case where _all_ regions are down.
-        sleep 1
+        sleep 5
         retry
       end
 
@@ -35,7 +35,7 @@ module PubSub
 
       def use_next_breaker
         Thread.current[THREAD_LOCAL_IDENTIFIER] = (Thread.current[THREAD_LOCAL_IDENTIFIER] + 1) % all_breakers.count
-        PubSub.logger.info "#{PubSub.config.service_name} switched to #{current_breaker.inspect}"
+        PubSub.logger.info "Switched to #{current_breaker.inspect}"
       end
 
       private
@@ -47,8 +47,7 @@ module PubSub
       def all_breakers
         @breakers ||= all_regions.map do |region|
           CB2::Breaker.new(
-          service: "aws-#{region}",
-          # TODO, make these values configurable
+          service: "aws-#{region}-breaker",
           duration: 60,
           threshold: 50,
           reenable_after: 60,
