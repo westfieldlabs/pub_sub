@@ -54,6 +54,11 @@ module PubSub
       ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'development'
     end
 
+    def report_error(e)
+      logger.error e
+      NewRelic::Agent.notice_error(e) if defined?(NewRelic)
+    end
+
     def stub_responses!
       Aws.config[:stub_responses] = true
     end
