@@ -7,11 +7,11 @@ module PubSub
     def poll
       Breaker.execute do
         poller.poll(config) do |message|
-          PubSub.logger.debug "PubSub [#{PubSub.config.service_name}] received from #{@queue.queue_url}: #{message}"
+          PubSub.logger.debug "PubSub [#{PubSub.config.service_name}] received message #{message.inspect}"
           begin
             Message.new(message.body).process
           rescue Faraday::TimeoutError => e
-            PubSub.logger.warn "#{e.message}. Message #{message.inspect} will be retried later"
+            PubSub.report_error e, "Message #{message.inspect} will be retried later"
             throw :skip_delete
           end
         end

@@ -14,7 +14,7 @@ module PubSub
       @subscriptions = {}
       @topics = {}
       # How long to wait before retrying a failed message
-      @visibility_timeout = 3600 # seconds, 1 hour
+      @visibility_timeout = 1200 # seconds, 20 minutes
     end
 
     def service(service_name)

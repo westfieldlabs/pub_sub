@@ -54,8 +54,8 @@ module PubSub
       ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'development'
     end
 
-    def report_error(e)
-      logger.error "#{e.inspect}\n#{e.backtrace.join('\n')}"
+    def report_error(e, extra_message = nil)
+      logger.error "#{e} - #{extra_message}\n#{e.backtrace.join("\n")}"
       NewRelic::Agent.notice_error(e) if defined?(NewRelic)
     end
 
