@@ -37,8 +37,8 @@ module PubSub
 
       # Override to provide alternative implementation.
       def on_breaker_open
-        PubSub.logger.info "#{@@current_breaker} detected more than #{NUM_ERRORS_THRESHOLD} errors\
-         during last #{ERROR_WINDOW} seconds. Will pause execution for #{REENABLE_AFTER} seconds"
+        PubSub.logger.info "#{@@current_breaker} detected more than #{NUM_ERRORS_THRESHOLD} errors"\
+         "during last #{ERROR_WINDOW} seconds. Will pause execution for #{REENABLE_AFTER} seconds"
       end
 
       def new_breaker(region)
