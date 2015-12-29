@@ -8,7 +8,7 @@ module PubSub
 
     def self.subscribe
       critical_section do
-        new.subscribe
+        new.send(:subscribe)
       end
     end
 
