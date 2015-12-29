@@ -18,6 +18,7 @@ describe PubSub::Subscriber do
         block.call
       end
     end
+    allow(Redlock::Client).to receive(:new).and_return(anything())
   end
 
   describe '#subscribe' do
