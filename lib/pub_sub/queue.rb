@@ -1,14 +1,19 @@
 module PubSub
   class Queue
 
+    def initialize(region: nil)
+      raise(ArgumentError, "Region is invalid or missing: #{region}") unless Configuration::SUPPORTED_REGIONS.include?(region)
+      @region = region
+    end
+
     def queue_url
-      Breaker.run do
+      Breaker.execute do
         sqs.create_queue(queue_name: queue_name).queue_url
       end
     end
 
     def queue_arn
-      Breaker.run do
+      Breaker.execute do
         sqs.get_queue_attributes(
           queue_url: queue_url, attribute_names: ["QueueArn"]
         ).attributes["QueueArn"]
@@ -26,11 +31,11 @@ module PubSub
       queue_attributes(attributes).values.map(&:to_i).sum
     end
 
-    private
-
     def sqs
-      Aws::SQS::Client.new(region: Breaker.current_region)
+      Aws::SQS::Client.new(region: @region)
     end
+
+    private
 
     def queue_name
       PubSub.service_identifier

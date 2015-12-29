@@ -16,7 +16,7 @@ module PubSub
       end
 
       def publish_synchronously(message, topic)
-        Breaker.run do
+        Breaker.execute do
           _topic_arn = topic_arn(topic)
           result = sns.publish(
             topic_arn: _topic_arn,
@@ -30,11 +30,11 @@ module PubSub
       private
 
       def sns
-        Aws::SNS::Client.new(region: Breaker.current_region)
+        Aws::SNS::Client.new(region: PubSub.config.current_region)
       end
 
       def topic_arn(topic)
-        Breaker.run do
+        Breaker.execute do
           sns.create_topic(name: topic).topic_arn
         end
       end

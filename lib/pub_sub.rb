@@ -55,7 +55,7 @@ module PubSub
     end
 
     def report_error(e)
-      logger.error e
+      logger.error "#{e.inspect}\n#{e.backtrace.join('\n')}"
       NewRelic::Agent.notice_error(e) if defined?(NewRelic)
     end
 
