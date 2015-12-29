@@ -7,7 +7,7 @@ module PubSub
     def poll
       Breaker.execute do
         poller.poll(config) do |message|
-          PubSub.logger.debug "PubSub [#{PubSub.config.service_name}] received: #{message}"
+          PubSub.logger.debug "PubSub [#{PubSub.config.service_name}] received from #{@queue.queue_url}: #{message}"
           begin
             Message.new(message.body).process
           rescue Faraday::TimeoutError => e
@@ -27,8 +27,8 @@ module PubSub
     end
 
     def poller
-      q = PubSub::Queue.new(region: PubSub.config.current_region)
-      Aws::SQS::QueuePoller.new(q.queue_url, client: q.sqs)
+      @queue = PubSub::Queue.new(region: PubSub.config.current_region)
+      Aws::SQS::QueuePoller.new(@queue.queue_url, client: @queue.sqs)
     end
 
   end

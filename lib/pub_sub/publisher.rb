@@ -22,7 +22,7 @@ module PubSub
             topic_arn: _topic_arn,
             message: message
           ).message_id
-          PubSub.logger.debug "PubSub [#{PubSub.config.service_name}] published to #{topic} message #{result}"
+          PubSub.logger.debug "PubSub [#{PubSub.config.service_name}] published to #{_topic_arn} message #{result}"
           result
         end
       end
