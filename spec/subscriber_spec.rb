@@ -1,7 +1,8 @@
 require 'spec_helper'
 require 'thread'
+require 'redlock'
 
-describe PubSub::Subscriber do
+describe "Subscriber" do # cannot use PubSub::Subscriber here due to 
 
   let(:semaphore) { Mutex.new }
 
@@ -25,7 +26,7 @@ describe PubSub::Subscriber do
     it 'should be thread-safe' do
       limit = 10
       counter = 0
-      allow_any_instance_of(described_class).to receive(:subscribe) do
+      allow_any_instance_of(PubSub::Subscriber).to receive(:subscribe) do
         # introduce race conditions on purpose - PubSub::Subscriber.subscribe should protect against that
         old_value = counter
         sleep rand

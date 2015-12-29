@@ -4,7 +4,7 @@ require 'thread'
 module PubSub
   class Subscriber
     SUBSCRIBE_TIMEOUT = 30000 # ms
-    @@semaphore = Redlock::Client.new ["redis://#{Redis.current.client.location}"]
+    @@semaphore = Mutex.new
 
     def self.subscribe
       critical_section do
@@ -15,7 +15,10 @@ module PubSub
     private
 
     def self.critical_section(&block)
-      @@semaphore.lock!(:pubsub_subscribe, SUBSCRIBE_TIMEOUT) do
+      @@semaphore.synchronize do
+        @@distributed_lock ||= Redlock::Client.new ["redis://#{Redis.current.client.location}"]
+      end
+      @@distributed_lock.lock!(:pubsub_subscribe, SUBSCRIBE_TIMEOUT) do
         yield
       end
     end
