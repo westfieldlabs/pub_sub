@@ -2,7 +2,9 @@ require 'spec_helper'
 require 'thread'
 require 'redlock'
 
-describe "Subscriber" do # cannot use PubSub::Subscriber here due to 
+# cannot use PubSub::Subscriber here because it would be evaluated before
+# our overrides for Redlock below are processed
+describe "PubSub::Subscriber" do
 
   let(:semaphore) { Mutex.new }
 
