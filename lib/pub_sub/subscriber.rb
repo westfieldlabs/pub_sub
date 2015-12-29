@@ -16,7 +16,7 @@ module PubSub
 
     def self.critical_section(&block)
       @@semaphore.synchronize do
-        @@distributed_lock ||= Redlock::Client.new ["redis://#{Redis.current.client.location}"]
+        @@distributed_lock ||= Redlock::Client.new [Redis.current]
       end
       @@distributed_lock.lock!(:pubsub_subscribe, SUBSCRIBE_TIMEOUT) do
         yield
