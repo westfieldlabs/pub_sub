@@ -13,12 +13,12 @@ describe PubSub::Subscriber do
       config.aws
     end
     # Replace the underlying Redlock which does not work in test environment
-    allow(described_class).to receive(:critical_section) do |&block|
+    allow_any_instance_of(Redlock::Client).to receive(:initialize).and_return(anything())
+    allow_any_instance_of(Redlock::Client).to receive(:lock!).with(any_args) do |&block|
       semaphore.synchronize do
         block.call
       end
     end
-    allow(Redlock::Client).to receive(:new).and_return(anything())
   end
 
   describe '#subscribe' do

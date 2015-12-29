@@ -15,7 +15,7 @@ module PubSub
     private
 
     def self.critical_section(&block)
-      @@semaphore.lock(:pubsub_subscribe, SUBSCRIBE_TIMEOUT) do
+      @@semaphore.lock!(:pubsub_subscribe, SUBSCRIBE_TIMEOUT) do
         yield
       end
     end
