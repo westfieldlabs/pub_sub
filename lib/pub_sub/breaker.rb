@@ -2,9 +2,9 @@ require 'thread'
 
 module PubSub
   class Breaker
-    NUM_ERRORS_THRESHOLD = 50
-    REENABLE_AFTER = 60
-    ERROR_WINDOW = 60
+    NUM_ERRORS_THRESHOLD = 10
+    REENABLE_AFTER = 60 # seconds
+    ERROR_WINDOW = 60 # seconds
     @@semaphore = Mutex.new
 
     class << self
