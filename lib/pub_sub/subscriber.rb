@@ -1,7 +1,26 @@
+require 'redlock'
+require 'thread'
+
 module PubSub
   class Subscriber
+    SUBSCRIBE_TIMEOUT = 30000 # ms
+    @@semaphore = Mutex.new
+
     def self.subscribe
-      new.subscribe
+      critical_section do
+        new.send(:subscribe)
+      end
+    end
+
+    private
+
+    def self.critical_section(&block)
+      @@semaphore.synchronize do
+        @@distributed_lock ||= Redlock::Client.new ["redis://#{Redis.current.client.location}"]
+      end
+      @@distributed_lock.lock!(:pubsub_subscribe, SUBSCRIBE_TIMEOUT) do
+        yield
+      end
     end
 
     def subscribe
@@ -13,8 +32,6 @@ module PubSub
         set_queue_policy(topics.map(&:arn), region)
       end
     end
-
-    private
 
     def subscribe_to_service(sender, topic_id, region)
       topic = Aws::SNS::Topic.new(sns(region).create_topic(name: topic_id).topic_arn, region: region)

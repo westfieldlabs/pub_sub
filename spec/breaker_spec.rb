@@ -1,78 +1,63 @@
 require 'spec_helper'
+
 describe PubSub::Breaker do
 
   before do
     %w(info debug error warn).each do |method|
       allow(PubSub.config).to receive_message_chain("logger.#{method}").and_return(anything())
     end
-    @breakers = 4.times.map do |index|
-      double("breaker#{index}")
-    end
     PubSub.configure do |config|
       config.aws
     end
   end
 
-  describe 'current breaker' do
+  class TestError < StandardError; end
+  let(:closed_breaker) { CB2::Breaker.new(strategy: "stub", allow: true) }
+  let(:open_breaker) { CB2::Breaker.new(strategy: "stub", allow: false) }
 
-    it "should return the breaker at the correct index" do
-      expect(PubSub::Breaker).to receive(:all_breakers).and_return @breakers
-      expect(PubSub::Breaker.current_breaker).to eq(@breakers[0])
+  it "should be closed and executable" do
+    i = 0
+    PubSub::Breaker.execute do
+      i = 1
     end
-
+    expect(i).to eq(1)
   end
 
-  describe 'current region' do
-
-    it "be default, should start with us-east-1" do
-      expect(PubSub::Breaker.current_region).to eq('us-east-1')
+  it "should absorb failures when open" do
+    allow(PubSub::Breaker).to receive(:get_breaker) { open_breaker }
+    expect(PubSub::Breaker).to receive(:on_breaker_open) do
+      raise TestError
     end
+    expect do
+      PubSub::Breaker.execute do
+        raise NotImplementedError
+      end
+    end.to raise_error(TestError)
   end
 
-  describe 'use next breaker' do
+  it "should expose failures when open" do
+    allow(PubSub::Breaker).to receive(:get_breaker) { closed_breaker }
+    expect(PubSub::Breaker).not_to receive(:on_breaker_open)
+    expect do
+      PubSub::Breaker.execute do
+        raise NotImplementedError
+      end
+    end.to raise_error(NotImplementedError)
+  end
 
-    it "should advance both regions and breakers" do
-      expect(PubSub::Breaker).to receive(:all_breakers).twice.and_return @breakers
-      PubSub::Breaker.use_next_breaker
-      expect(PubSub::Breaker.current_region).to eq('us-west-1')
-      expect(PubSub::Breaker).to receive(:all_breakers).and_return @breakers
-      expect(PubSub::Breaker.current_breaker).to eq(@breakers[1])
-    end
-
-    it "should wrap around regions and breakers" do
-      allow(PubSub::Breaker).to receive(:all_breakers).and_return @breakers
-      PubSub::Breaker.use_next_breaker
-      expect(PubSub::Breaker.current_region).to eq('eu-west-1')
-      expect(PubSub::Breaker.current_breaker).to eq(@breakers[2])
-      PubSub::Breaker.use_next_breaker
-      expect(PubSub::Breaker.current_breaker).to eq(@breakers[3])
-      PubSub::Breaker.use_next_breaker
-      expect(PubSub::Breaker.current_breaker).to eq(@breakers[0])
-    end
-
-    it 'should be thread safe' do
-      allow(PubSub::Breaker).to receive(:all_breakers).and_return @breakers
-      # This should surface timing problems
-      10.times do
-        Thread.new do
-          100.times do
-            PubSub::Breaker.use_next_breaker
-          end
+  it "should work in the multi-threaded environment" do
+    limit = 1000
+    threads = limit.times.map do |i|
+      Thread.new do
+        PubSub::Breaker.execute do
+          Thread.current[:result] = i
         end
       end
-      Thread.new do
-        expect(PubSub::Breaker.current_breaker).to eq(@breakers[0])
-        PubSub::Breaker.use_next_breaker
-        expect(PubSub::Breaker.current_breaker).to eq(@breakers[1])
-      end
-      Thread.new do
-        expect(PubSub::Breaker.current_breaker).to eq(@breakers[0])
-        PubSub::Breaker.use_next_breaker
-        expect(PubSub::Breaker.current_breaker).to eq(@breakers[1])
-      end
-      expect(PubSub::Breaker.current_breaker).to eq(@breakers[0])
     end
-
+    threads.map(&:join)
+    expected = limit.times.inject(0){|r,i| r += i}
+    actual = threads.map{|t| t[:result]}.inject(0){|r,i| r += i}
+    expect(actual).to eq(expected)
   end
 
 end

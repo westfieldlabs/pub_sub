@@ -1,67 +1,55 @@
-# This is a circuit breaker that fails over to a different region on errors
+require 'thread'
+
 module PubSub
-
   class Breaker
-
-    THREAD_LOCAL_IDENTIFIER = :pub_sub_region
+    NUM_ERRORS_THRESHOLD = 10
+    REENABLE_AFTER = 60 # seconds
+    ERROR_WINDOW = 60 # seconds
+    @@semaphore = Mutex.new
 
     class << self
 
-      def run(&block)
-        current_breaker.run do
+      def execute(&block)
+        get_breaker.run do
           begin
             block.call
           rescue Exception => e
-            PubSub.logger.warn e
-            NewRelic::Agent.notice_error(e) if defined?(NewRelic)
-            raise # will be caught by the breaker
+            # Intercept for breaker's tracking purposes
+            PubSub.report_error e
+            raise # will be caught by the breaker once enough of these accumulate
           end
         end
       rescue CB2::BreakerOpen => e
-        PubSub.logger.warn e
-        Breaker.use_next_breaker
-        # Sleep to stop wasting system resources in the case where _all_ regions are down.
-        sleep 1
-        retry
+        PubSub.report_error e
+        on_breaker_open
       end
 
-      def current_breaker
-        all_breakers[current_breaker_idx]
-      end
 
-      def current_region
-        all_regions[current_breaker_idx]
-      end
+    protected
 
-      def use_next_breaker
-        Thread.current[THREAD_LOCAL_IDENTIFIER] = (Thread.current[THREAD_LOCAL_IDENTIFIER] + 1) % all_breakers.count
-        PubSub.logger.info "#{PubSub.config.service_name} switched to #{current_breaker.inspect}"
-      end
-
-      private
-
-      def current_breaker_idx
-        Thread.current[THREAD_LOCAL_IDENTIFIER] ||= 0
-      end
-
-      def all_breakers
-        @breakers ||= all_regions.map do |region|
-          CB2::Breaker.new(
-          service: "aws-#{region}",
-          # TODO, make these values configurable
-          duration: 60,
-          threshold: 50,
-          reenable_after: 60,
-          redis: Redis.current)
+      # Override to return the desired instance
+      def get_breaker
+        region = PubSub.config.current_region
+        @@semaphore.synchronize do
+          @@current_breaker ||= new_breaker(region)
         end
       end
 
-      def all_regions
-        PubSub.config.regions
+      # Override to provide alternative implementation.
+      def on_breaker_open
+        PubSub.logger.info "#{@@current_breaker} detected more than #{NUM_ERRORS_THRESHOLD} errors\
+         during last #{ERROR_WINDOW} seconds. Will pause execution for #{REENABLE_AFTER} seconds"
+      end
+
+      def new_breaker(region)
+        CB2::Breaker.new(
+          service: "aws-#{region}-breaker",
+          duration: ERROR_WINDOW,
+          threshold: NUM_ERRORS_THRESHOLD,
+          reenable_after: REENABLE_AFTER,
+          redis: Redis.current)
       end
 
     end
-
   end
-
 end

@@ -3,7 +3,7 @@ require 'spec_helper'
 describe PubSub::Poller do
 
   let(:message) do
-    double(body: JSON.dump({
+    double(message_id: '123', attributes: {a: 1}, body: JSON.dump({
       sender: "test-service-#{PubSub.env_suffix}",
       type: 'example_update',
       data: {
