@@ -1,5 +1,10 @@
+require 'thread'
+
 module PubSub
   class Subscriber
+    # warning: this will not protect against multiple processes
+    # If we really want that protection, we can try using 'redlock' gem.
+    @@semaphore = Mutex.new
 
     def self.subscribe
       new.send(:subscribe)
@@ -8,12 +13,14 @@ module PubSub
     private
 
     def subscribe
-      PubSub.config.regions.each do |region|
-        topics = PubSub.config.subscriptions.keys.map do |service_identifier|
-          topic = PubSub.config.topics[service_identifier]
-          subscribe_to_service(service_identifier, topic, region)
+      @@semaphore.synchronize do
+        PubSub.config.regions.each do |region|
+          topics = PubSub.config.subscriptions.keys.map do |service_identifier|
+            topic = PubSub.config.topics[service_identifier]
+            subscribe_to_service(service_identifier, topic, region)
+          end
+          set_queue_policy(topics.map(&:arn), region)
         end
-        set_queue_policy(topics.map(&:arn), region)
       end
     end
 
