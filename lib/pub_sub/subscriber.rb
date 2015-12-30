@@ -1,6 +1,3 @@
-require 'redlock'
-require 'thread'
-
 module PubSub
   class Subscriber
 
