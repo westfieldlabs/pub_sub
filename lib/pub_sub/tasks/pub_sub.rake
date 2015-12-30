@@ -1,6 +1,6 @@
 namespace :pub_sub do
   desc 'Poll the queue for updates'
-  task poll: [:environment, :subscribe] do
+  task poll: :environment do
     worker_concurrency.times.map do |idx|
       Thread.new do
         start_poll_thread
