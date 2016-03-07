@@ -11,6 +11,7 @@ module PubSub
 
     def message_json
       JSON.dump(sender: PubSub.service_identifier,
+                origin: `whoami`.strip,
                 type: message_type,
                 data: message_data)
     end
