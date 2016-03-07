@@ -15,6 +15,7 @@ describe PubSub::Publisher do
   let(:publisher) { ExampleUpdate.new(object) }
   let(:message) do
     JSON.dump(sender: "test-service-#{PubSub.env_suffix}",
+              origin: `whoami`.strip,
               type: 'example_update',
               data: {
                 name: 'example message'
