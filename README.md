@@ -151,7 +151,7 @@ It is not recommended to use async functionality - it is deprecated and liekly t
 
 ```ruby
 # Example of using a message publisher with async
-FooUpdate.new(Foo.first).publish
+FooUpdate.new(Foo.first).publish(async: true)
 ```
 
 ### ActiveRecord integration
