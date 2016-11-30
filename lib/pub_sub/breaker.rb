@@ -10,18 +10,18 @@ module PubSub
     class << self
 
       def execute(&block)
-        get_breaker.run do
-          begin
+        begin
+          get_breaker.run do
             block.call
-          rescue Exception => e
-            # Intercept for breaker's tracking purposes
-            PubSub.report_error e
-            raise # will be caught by the breaker once enough of these accumulate
           end
+        rescue CB2::BreakerOpen => e
+          PubSub.report_error e
+          on_breaker_open
+        rescue Exception => e
+          # Intercept for breaker's tracking purposes
+          PubSub.report_error e
+          raise # will be caught by the breaker once enough of these accumulate
         end
-      rescue CB2::BreakerOpen => e
-        PubSub.report_error e
-        on_breaker_open
       end
 
 
