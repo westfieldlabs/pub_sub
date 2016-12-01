@@ -6,6 +6,8 @@ It relies on https://github.com/pedro/cb2 and hence redis to circuit break in ca
 
 ## Installation
 
+You will need Ruby 2.2.2 or higher.
+
 Add this line to your application's Gemfile:
 
 ```ruby
