@@ -1,11 +1,11 @@
 module PubSub
-
   class Configuration
+    attr_reader :logger
     attr_accessor :service_name,
                   :subscriptions,
                   :topics,
                   :visibility_timeout,
-                  :logger,
+                  :log_level,
                   :regions
 
     SUPPORTED_REGIONS = %w(us-east-1 us-west-1 eu-west-1 ap-southeast-1)
@@ -23,6 +23,10 @@ module PubSub
 
     def current_region
       regions.first
+    end
+
+    def logger=(log)
+      @logger = Logger.new(log)
     end
 
     # Subscribe to a specific sender for specific message types.

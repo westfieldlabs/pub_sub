@@ -47,7 +47,8 @@ If you use standard AWS environment variables (`AWS_ACCESS_KEY_ID` and `AWS_SECR
 Similarly, if you want to subscribe in all available regions, then omit the `regions` parameter as well.
 
 ### Logging
-If running under Rails, this will log to Rails.logger. In other environments, you can set the logger like `PubSub.config.logger = MyLogger` or similar.
+If running under Rails, this will log to Rails.logger. In other environments, you can set the logger like `PubSub.config.logger = MyLogger` or similar.  
+You also can set the log_level like `PubSub.config.log_level = :info` for published, received and processed messages, valid options are: `:debug`, `:info`, `:warn`, `:error`, `:fatal` and `:unknown`, `:debug` is the default value.
 
 ### Wiring up subscriptions
 To connect queues to topics, and put the above config file into practice, you should run `bundle exec rake pub_sub:subscribe`. Verify this has worked as expected by running `bundle exec rake pub_sub:debug:subscriptions`.
