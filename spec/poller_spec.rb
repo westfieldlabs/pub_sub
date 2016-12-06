@@ -11,11 +11,11 @@ describe PubSub::Poller do
       }
     }))
   end
-  
+
   class ExpectedExit < StandardError; end
 
   before do
-    %w(info debug error warn).each do |method|
+    %w(info debug error warn log).each do |method|
       allow(PubSub).to receive_message_chain("logger.#{method}").and_return(anything())
     end
     allow_any_instance_of(PubSub::Queue).to receive(:queue_url) { nil }

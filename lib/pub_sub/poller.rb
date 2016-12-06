@@ -10,7 +10,7 @@ module PubSub
         @queue = nil
         PubSub.logger.info "Listening to #{queue.queue_url}"
         poller.poll(config) do |message|
-          PubSub.logger.debug "PubSub [#{PubSub.config.service_name}] received message #{message.inspect}"
+          PubSub.logger.log "PubSub [#{PubSub.config.service_name}] received message #{message.inspect}"
           begin
             Message.new(message.body).process
           rescue Faraday::TimeoutError => e

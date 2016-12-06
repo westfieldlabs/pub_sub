@@ -6,6 +6,7 @@ module PubSub
 
     initializer 'pub_sub.initialize' do
       PubSub.config.logger = Rails.logger
+      PubSub.config.log_level = :debug
       require 'pub_sub/railties/active_record'
       ActiveSupport.on_load(:active_record) do
         ActiveRecord::Base.send :include, PubSub::Railties::ActiveRecord

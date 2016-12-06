@@ -18,6 +18,7 @@ module PubSub
   autoload :Message,          'pub_sub/message'
   autoload :MessageHandler,   'pub_sub/message_handler'
   autoload :MessagePublisher, 'pub_sub/message_publisher'
+  autoload :Logger,           'pub_sub/logger'
 
   class << self
     attr_accessor :config
