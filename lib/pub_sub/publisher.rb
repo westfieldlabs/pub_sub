@@ -22,7 +22,17 @@ module PubSub
             topic_arn: _topic_arn,
             message: message
           ).message_id
-          PubSub.logger.log "PubSub [#{PubSub.config.service_name}] published to #{_topic_arn} message #{result}"
+
+          message_type = JSON.parse(message)['type'] rescue "unknown"
+
+          logging_details = {
+            service_name: PubSub.config.service_name,
+            message_type: message_type,
+            message_id: result,
+            topic_arn: _topic_arn
+          }.to_json
+
+          PubSub.logger.log "[PubSub] published message: #{logging_details}"
           result
         end
       end
@@ -38,7 +48,6 @@ module PubSub
           sns.create_topic(name: topic).topic_arn
         end
       end
-
     end
   end
 end
