@@ -56,10 +56,9 @@ module PubSub
       @payload['data']
     end
 
-    # Guess the handler based on conventions
-    # Eg deal_update -> DealUpdate
+    # Handler class constant for this message
     def handler
-      @handler ||= type.camelize.constantize
+      PubSub.config.handlers[type]
     end
   end
 end

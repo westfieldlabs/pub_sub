@@ -1,4 +1,6 @@
-describe PubSub do
+RSpec.describe PubSub do
+  class Example
+  end
 
   before do
     PubSub.configure do |config|
