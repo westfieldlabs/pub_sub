@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe PubSub::Poller do
+RSpec.describe PubSub::Poller do
 
   let(:message) do
     double(message_id: '123', attributes: {a: 1}, body: JSON.dump({

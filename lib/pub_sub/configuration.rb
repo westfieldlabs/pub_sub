@@ -1,12 +1,13 @@
 module PubSub
   class Configuration
-    attr_reader :logger
+    attr_reader :logger, :handlers
     attr_accessor :service_name,
                   :subscriptions,
                   :topics,
                   :visibility_timeout,
                   :log_level,
                   :regions
+
 
     SUPPORTED_REGIONS = %w(us-east-1 us-west-1 eu-west-1 ap-southeast-1)
 
@@ -15,6 +16,7 @@ module PubSub
       @topics = {}
       # How long to wait before retrying a failed message
       @visibility_timeout = 1200 # seconds, 20 minutes
+      @handlers = {}
     end
 
     def service(service_name)
@@ -41,9 +43,10 @@ module PubSub
     # You can specify the sender, messages, and topic - all independently.
     # If topic is not specified, the value for {service_identifier} will be used.
     def subscribe_to_custom(service_identifier, messages: [], topic: nil)
-      topic ||= service_identifier
       @subscriptions[service_identifier] = messages
-      @topics[service_identifier] = topic
+      @topics[service_identifier] = topic || service_identifier
+      # Assume handler class names based on conventions, ex: deal_update -> DealUpdate
+      @handlers.merge!(Hash[messages.map { |m| [m, m.camelize.constantize] }])
     end
 
     # Configure AWS credentials and region. Omit (nil) any of the parameters to use environment defaults

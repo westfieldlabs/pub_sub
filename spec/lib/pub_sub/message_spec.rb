@@ -23,6 +23,7 @@ RSpec.describe PubSub::Message do
     %w(info debug error warn log).each do |method|
       allow(PubSub.config).to receive_message_chain("logger.#{method}").and_return(anything())
     end
+    PubSub.config.subscribe_to "Entity", messages: ["entity_update"]
   end
 
   describe '#process' do

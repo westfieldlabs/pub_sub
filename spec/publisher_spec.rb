@@ -1,6 +1,9 @@
 require 'spec_helper'
 
-describe PubSub::Publisher do
+RSpec.describe PubSub::Publisher do
+  class Example
+  end
+
   before do
     %w(info debug error warn log).each do |method|
       allow(PubSub).to receive_message_chain("logger.#{method}").and_return(anything())

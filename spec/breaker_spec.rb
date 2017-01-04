@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe PubSub::Breaker do
+RSpec.describe PubSub::Breaker do
 
   before do
     %w(info debug error warn).each do |method|
