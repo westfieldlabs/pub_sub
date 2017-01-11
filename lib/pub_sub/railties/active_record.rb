@@ -5,13 +5,25 @@ module PubSub
         klass.send :include, InstanceMethods
         klass.send :extend, ClassMethods
 
-        klass.after_save :publish_changes, if: -> { changed? }
-        klass.after_destroy :publish_changes
-        klass.after_touch :publish_changes
+        # explicit cases that mark a record to be published
+        klass.after_save :__pubsub_mark_to_publish!, if: :changed?
+        klass.after_destroy :__pubsub_mark_to_publish!
+        klass.after_touch :__pubsub_mark_to_publish!
+
+        klass.after_commit :publish_changes, if: :__pubsub_marked_to_publish?
       end
 
       module InstanceMethods
+        def __pubsub_mark_to_publish!
+          @__pubsub_changes_to_publish = true
+        end
+
+        def __pubsub_marked_to_publish?
+          @__pubsub_changes_to_publish
+        end
+
         def publish_changes
+          @__pubsub_changes_to_publish = false
           return true unless self.class.publisher_class
 
           async = self.class.publisher_async
