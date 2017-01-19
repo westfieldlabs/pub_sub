@@ -1,6 +1,9 @@
 namespace :pub_sub do
   desc 'Poll the queue for updates'
   task poll: [:environment, :subscribe] do
+    # avoid race conditions if multiple threads load classes
+    Rails.application.eager_load!
+
     worker_concurrency.times.map do |idx|
       Thread.new do
         start_poll_thread
