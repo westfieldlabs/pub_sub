@@ -17,6 +17,24 @@ RSpec.describe PubSub::Message do
       }'
     }
   }
+
+  let(:unregistered_sender_sns) {
+    {
+      'message_id' => 'msg-uuid',
+      'body' => '{
+        "Type" : "Notification",
+        "MessageId" : "different-msg-uuid",
+        "TopicArn" : "arn:aws:sns:region:aws_account_id:entity-service-prod",
+        "Message" : "{\"sender\":\"sender11\",\"type\":\"entity_update\",\"data\":{\"uri\":\"https://example.com/entity/11355\",\"id\":11355}}",
+        "Timestamp" : "2015-06-19T22:11:55.760Z",
+        "SignatureVersion" : "1",
+        "Signature" : "signature==",
+        "SigningCertURL" : "https://sns.us-east-1.amazonaws.com/entity-xyz.pem",
+        "UnsubscribeURL" : "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:region:aws_account_id:entity-service-prod:uuid"
+      }'
+    }
+  }
+
   subject { described_class.new(payload) }
 
   before do
@@ -57,10 +75,22 @@ RSpec.describe PubSub::Message do
           subject.process
         end
       end
+
+      context 'valid message' do
+        let(:payload) { unregistered_sender_sns['body'] }
+
+        it 'with whitelisted sender' do
+          PubSub.configure do |config|
+            config.add_to_whitelist 'sender11'
+          end
+
+          expect(EntityUpdate).to receive(:process).with(message)
+          subject.process
+        end
+      end
     end
 
     context "message is not valid" do
-
       context 'with unknown sender' do
         let(:payload) { raw_sns_message['body'] }
 

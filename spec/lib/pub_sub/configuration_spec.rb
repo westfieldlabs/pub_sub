@@ -24,15 +24,23 @@ RSpec.describe PubSub::Configuration do
         config.subscribe_to 'test2', messages: ['test2_update']
       end
 
-      handlers =
-        {
-          'test1_update' => Test1Update,
-          'test1_delete' => Test1Delete,
-          'test2_update' => Test2Update
-        }
+      handlers = {
+        'test1_update' => Test1Update,
+        'test1_delete' => Test1Delete,
+        'test2_update' => Test2Update
+      }
 
       expect(PubSub.config.handlers).to eq(handlers)
     end
   end
 
+  describe '#add_to_whitelist' do
+    it 'add sender to whitelist' do
+      PubSub.configure do |config|
+        config.add_to_whitelist 'sender1'
+      end
+
+      expect(PubSub.config.whitelist).to include('sender1')
+    end
+  end
 end

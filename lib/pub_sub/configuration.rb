@@ -6,6 +6,7 @@ module PubSub
                   :topics,
                   :visibility_timeout,
                   :log_level,
+                  :whitelist,
                   :regions
 
 
@@ -17,6 +18,7 @@ module PubSub
       # How long to wait before retrying a failed message
       @visibility_timeout = 1200 # seconds, 20 minutes
       @handlers = {}
+      @whitelist = []
     end
 
     def service(service_name)
@@ -29,6 +31,10 @@ module PubSub
 
     def logger=(log)
       @logger = Logger.new(log)
+    end
+
+    def add_to_whitelist(sender)
+      @whitelist << sender
     end
 
     # Subscribe to a specific sender for specific message types.

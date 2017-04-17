@@ -29,6 +29,7 @@ module PubSub
     end
 
     def validate_message!
+      return if PubSub.config.whitelist.include?(sender)
       messages = PubSub.config.subscriptions[sender]
       if messages.nil? || messages.empty?
         warning = "#{PubSub.config.service_name} received a message from #{sender} but no matching subscription exists for that sender. Available senders are: #{PubSub.config.subscriptions.keys}"
