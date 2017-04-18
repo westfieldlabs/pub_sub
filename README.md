@@ -36,6 +36,10 @@ PubSub.configure do |config|
   config.subscribe_to 'barbaz', messages: ['bar_update', 'baz_update']
   config.subscribe_to 'wibble', messages: ['wibble_update']
 
+  # Add senders to whitelist
+  config.add_to_whitelist 'foobar_sender'
+  config.add_to_whitelist 'barfoo_sender'
+
   # Credentials and region for Amazon AWS (for SNS/SQS)
   config.aws(
     key: 'mykey',
