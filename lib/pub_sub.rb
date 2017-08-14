@@ -44,7 +44,7 @@ module PubSub
     # queues. Using `development` would cause conflicts with other developers.
     def env_suffix
       if %w(development test).include?(rails_env)
-        `whoami`.strip
+        sanitize_for_aws(`whoami`)
       else
         rails_env
       end
@@ -62,6 +62,10 @@ module PubSub
 
     def stub_responses!
       Aws.config[:stub_responses] = true
+    end
+
+    def sanitize_for_aws(name)
+      name.strip.gsub(/[^\w\s\-]/, '_')
     end
   end
 end
